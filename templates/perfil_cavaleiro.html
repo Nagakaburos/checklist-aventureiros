@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ cavaleiro.nome }} - Perfil</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cor-primaria: {{ classes[cavaleiro.classe].cor_primaria }};
+            --cor-secundaria: {{ classes[cavaleiro.classe].cor_secundaria }};
+            --pergaminho: rgba(240, 234, 214, 0.7);
+        }
+        body {
+            font-family: 'MedievalSharp', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            {% if cavaleiro.classe == 'Necromante' %}
+                background-color: #000000;
+                color: #00FF00;
+            {% else %}
+                background-image: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
+                color: #3D2B1F;
+            {% endif %}
+        }
+        .container {
+            width: 50%;
+            margin: 0 auto;
+        }
+        .header-heroi {
+            background-color: var(--cor-primaria);
+            color: var(--cor-secundaria);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .quest-card {
+            border: 2px solid var(--cor-primaria);
+            background-color: var(--pergaminho);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .formulario {
+            border: 3px solid var(--cor-primaria);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: var(--pergaminho);
+        }
+        input, textarea, select, button {
+            font-family: 'MedievalSharp', cursive;
+            margin: 8px 0;
+            padding: 10px;
+            border: 2px solid var(--cor-primaria);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 100%;
+        }
+        button {
+            background-color: var(--cor-primaria);
+            color: var(--cor-secundaria);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .categoria-titulo {
+            color: var(--cor-primaria);
+            border-bottom: 2px solid var(--cor-primaria);
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+        .concluida {
+            opacity: 0.6;
+            background: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 10px,
+                rgba(0,0,0,0.1) 10px,
+                rgba(0,0,0,0.1) 20px
+            );
+        }
+        .desativada {
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        .voltar-btn {
+            background-color: var(--cor-secundaria);
+            color: var(--cor-primaria);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
+        
+        <div class="header-heroi">
+            <h1>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h1>
+            <h2>{{ cavaleiro.classe }}</h2>
+        </div>
+
+        <div class="formulario">
+            <form method="POST" action="/adicionar_quest">
+                <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
+                <input type="text" name="titulo" placeholder="Nova Quest" required>
+                <textarea name="descricao" placeholder="Detalhes"></textarea>
+                <select name="categoria" required>
+                    <option value="manha">🌄 Manhã</option>
+                    <option value="dia">🏰 Durante o Dia</option>
+                    <option value="instagram_stories">📜 Instagram/Stories</option>
+                    <option value="instagram_feed">📜 Instagram/Feed</option>
+                    <option value="instagram_perguntas">📜 Instagram/Perguntas</option>
+                    <option value="whatsapp_status">📯 WhatsApp/Status</option>
+                    <option value="whatsapp_transmissao">📯 WhatsApp/Transmissão</option>
+                    <option value="vendas">💰 Vendas</option>
+                    <option value="pos_venda">📦 Pós-Venda</option>
+                    <option value="parcerias">🤝 Parcerias</option>
+                    <option value="expediente">🌙 Fim de Expediente</option>
+                </select>
+                <button type="submit">Adicionar Quest</button>
+            </form>
+        </div>
+
+        {% set categorias = ['manha', 'dia', 'instagram_stories', 'instagram_feed', 
+                           'instagram_perguntas', 'whatsapp_status', 'whatsapp_transmissao',
+                           'vendas', 'pos_venda', 'parcerias', 'expediente'] %}
+        
+        {% for categoria in categorias %}
+            {% set quests_categoria = quests|selectattr('categoria', 'equalto', categoria)|list %}
+            {% if quests_categoria %}
+                <h3 class="categoria-titulo">
+                    {% if categoria == 'manha' %}🌄 Manhã
+                    {% elif categoria == 'dia' %}🏰 Dia
+                    {% elif categoria == 'instagram_stories' %}📜 Instagram/Stories
+                    {% elif categoria == 'instagram_feed' %}📜 Instagram/Feed
+                    {% elif categoria == 'instagram_perguntas' %}📜 Instagram/Perguntas
+                    {% elif categoria == 'whatsapp_status' %}📯 WhatsApp/Status
+                    {% elif categoria == 'whatsapp_transmissao' %}📯 WhatsApp/Transmissão
+                    {% elif categoria == 'vendas' %}💰 Vendas
+                    {% elif categoria == 'pos_venda' %}📦 Pós-Venda
+                    {% elif categoria == 'parcerias' %}🤝 Parcerias
+                    {% elif categoria == 'expediente' %}🌙 Fim de Expediente
+                    {% endif %}
+                </h3>
+                
+                {% for quest in quests_categoria %}
+                    <div class="quest-card {{ 'concluida' if quest.concluida }} {{ 'desativada' if quest.desativada_ate and quest.desativada_ate > datetime.utcnow() }}">
+                        <h3><a href="/toggle_quest/{{ quest.id }}" style="text-decoration: none;">
+                            {% if quest.concluida %}✔️{% else %}⚔️{% endif %}
+                            {{ quest.titulo }}
+                        </a></h3>
+                        <p>{{ quest.descricao }}</p>
+                        <small>
+                            {{ 'Diária ⏳' if quest.diaria }}{{ 'Semanal 📅' if quest.semanal }}
+                            | Criada em: {{ quest.data_criacao.strftime('%d/%m') }}
+                            {% if quest.concluida and quest.desativada_ate %}
+                                | Disponível em: {{ (quest.desativada_ate - datetime.utcnow()).seconds // 3600 }}h
+                                {{ ((quest.desativada_ate - datetime.utcnow()).seconds % 3600) // 60 }}m
+                            {% endif %}
+                        </small>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="formulario">
+            <form method="POST" action="/adicionar_conquista">
+                <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
+                <input type="text" name="titulo" placeholder="Nova Conquista" required>
+                <textarea name="descricao" placeholder="Como foi conquistada"></textarea>
+                <button type="submit">Registrar Conquista</button>
+            </form>
+        </div>
+
+        <h2 class="categoria-titulo">🏆 Conquistas</h2>
+        {% for conquista in conquistas %}
+            <div class="quest-card">
+                <h3>🏅 {{ conquista.titulo }}</h3>
+                <p>{{ conquista.descricao }}</p>
+                <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

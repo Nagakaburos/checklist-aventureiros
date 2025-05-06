@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>📜 Taverna dos Aventureiros</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pergaminho: rgba(240, 234, 214, 0.7);
+            --tinta: #3D2B1F;
+        }
+        body {
+            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
+            font-family: 'MedievalSharp', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 50%;
+            margin: 0 auto;
+        }
+        .heroi-card {
+            border: 3px solid;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: var(--pergaminho);
+            text-align: center;
+        }
+        .formulario {
+            border: 3px solid var(--tinta);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: var(--pergaminho);
+        }
+        input, select, button {
+            font-family: 'MedievalSharp', cursive;
+            margin: 8px 0;
+            padding: 10px;
+            border: 2px solid var(--tinta);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 100%;
+        }
+        button {
+            background-color: #8B0000;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #A52A2A;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .conquista-card {
+            background-color: rgba(255, 215, 0, 0.3);
+            border-left: 4px solid gold;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .conquista-autor {
+            font-style: italic;
+            color: #8B0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏰 Taverna dos Aventureiros</h1>
+        
+        <div class="formulario">
+            <form method="POST" action="/adicionar_cavaleiro">
+                <input type="text" name="nome" placeholder="Nome do Herói" required>
+                <select name="classe" required>
+                    {% for classe, dados in classes.items() %}
+                        <option value="{{ classe }}">{{ dados.icone }} {{ classe }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Recrutar</button>
+            </form>
+        </div>
+
+        <h2>🏆 Últimas Conquistas</h2>
+        {% for conquista in conquistas %}
+            <div class="conquista-card">
+                <h3>{{ conquista.titulo }}</h3>
+                <p>{{ conquista.descricao }}</p>
+                <p class="conquista-autor">Conquistado por: {{ conquista.autor_nome }}</p>
+                <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+            </div>
+        {% endfor %}
+
+        <h2>⚔️ Nossos Heróis</h2>
+        {% for cavaleiro in cavaleiros %}
+            <div class="heroi-card" style="border-color: {{ classes[cavaleiro.classe].cor_primaria }};">
+                <h3><a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" 
+                      style="color: {{ classes[cavaleiro.classe].cor_primaria }};">
+                    {{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}
+                </a></h3>
+                <p>{{ cavaleiro.classe }}</p>
+                <p>Quests: {{ cavaleiro.quests|length }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
