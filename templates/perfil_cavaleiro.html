@@ -105,27 +105,7 @@
             <h2>{{ cavaleiro.classe }}</h2>
         </div>
 
-        <div class="formulario">
-            <form method="POST" action="/adicionar_quest">
-                <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
-                <input type="text" name="titulo" placeholder="Nova Quest" required>
-                <textarea name="descricao" placeholder="Detalhes"></textarea>
-                <select name="categoria" required>
-                    <option value="manha">🌄 Manhã</option>
-                    <option value="dia">🏰 Durante o Dia</option>
-                    <option value="instagram_stories">📜 Instagram/Stories</option>
-                    <option value="instagram_feed">📜 Instagram/Feed</option>
-                    <option value="instagram_perguntas">📜 Instagram/Perguntas</option>
-                    <option value="whatsapp_status">📯 WhatsApp/Status</option>
-                    <option value="whatsapp_transmissao">📯 WhatsApp/Transmissão</option>
-                    <option value="vendas">💰 Vendas</option>
-                    <option value="pos_venda">📦 Pós-Venda</option>
-                    <option value="parcerias">🤝 Parcerias</option>
-                    <option value="expediente">🌙 Fim de Expediente</option>
-                </select>
-                <button type="submit">Adicionar Quest</button>
-            </form>
-        </div>
+
 
         {% set categorias = ['manha', 'dia', 'instagram_stories', 'instagram_feed', 
                            'instagram_perguntas', 'whatsapp_status', 'whatsapp_transmissao',
@@ -170,11 +150,31 @@
         {% endfor %}
 
         <div class="formulario">
-            <form method="POST" action="/adicionar_conquista">
+            <form method="POST" action="/adicionar_quest">
                 <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
-                <input type="text" name="titulo" placeholder="Nova Conquista" required>
-                <textarea name="descricao" placeholder="Como foi conquistada"></textarea>
-                <button type="submit">Registrar Conquista</button>
+                <input type="text" name="titulo" placeholder="Nova Quest" required>
+                <textarea name="descricao" placeholder="Detalhes"></textarea>
+                
+                <div class="checkboxes">
+                    <label><input type="checkbox" name="diaria"> Diária</label>
+                    <label><input type="checkbox" name="semanal"> Semanal</label>
+                </div>
+                
+                <select name="categoria" required>
+                    <option value="manha">🌄 Manhã</option>
+                    <option value="dia">🏰 Durante o Dia</option>
+                    <option value="instagram_stories">📜 Instagram/Stories</option>
+                    <option value="instagram_feed">📜 Instagram/Feed</option>
+                    <option value="instagram_perguntas">📜 Instagram/Perguntas</option>
+                    <option value="whatsapp_status">📯 WhatsApp/Status</option>
+                    <option value="whatsapp_transmissao">📯 WhatsApp/Transmissão</option>
+                    <option value="vendas">💰 Vendas</option>
+                    <option value="pos_venda">📦 Pós-Venda</option>
+                    <option value="parcerias">🤝 Parcerias</option>
+                    <option value="expediente">🌙 Fim de Expediente</option>
+                </select>
+                
+                <button type="submit">Adicionar Quest</button>
             </form>
         </div>
 
