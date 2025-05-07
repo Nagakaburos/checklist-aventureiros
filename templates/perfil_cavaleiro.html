@@ -26,7 +26,8 @@
             {% endif %}
         }
         .container {
-            width: 50%;
+            width: 90%;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .header-heroi {
@@ -85,107 +86,118 @@
                 rgba(0,0,0,0.1) 20px
             );
         }
-        .desativada {
-            pointer-events: none;
-            opacity: 0.4;
-        }
         .voltar-btn {
             background-color: var(--cor-secundaria);
             color: var(--cor-primaria);
             margin-bottom: 20px;
+            display: inline-block;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .user-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .user-info {
+            background-color: var(--pergaminho);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--cor-primaria);
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
+        <div class="user-controls">
+            <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
+            {% if usuario_logado %}
+                <div class="user-info">
+                    🧙‍♂️ {{ usuario_logado.username }}
+                    {% if is_master %}(Mestre){% endif %}
+                    <a href="{{ url_for('logout') }}" style="margin-left: 10px;">Sair</a>
+                </div>
+            {% endif %}
+        </div>
         
         <div class="header-heroi">
             <h1>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h1>
             <h2>{{ cavaleiro.classe }}</h2>
         </div>
 
-
-
-        {% set categorias = ['manha', 'dia', 'instagram_stories', 'instagram_feed', 
-                           'instagram_perguntas', 'whatsapp_status', 'whatsapp_transmissao',
-                           'vendas', 'pos_venda', 'parcerias', 'expediente'] %}
-        
-        {% for categoria in categorias %}
-            {% set quests_categoria = quests|selectattr('categoria', 'equalto', categoria)|list %}
-            {% if quests_categoria %}
-                <h3 class="categoria-titulo">
-                    {% if categoria == 'manha' %}🌄 Manhã
-                    {% elif categoria == 'dia' %}🏰 Dia
-                    {% elif categoria == 'instagram_stories' %}📜 Instagram/Stories
-                    {% elif categoria == 'instagram_feed' %}📜 Instagram/Feed
-                    {% elif categoria == 'instagram_perguntas' %}📜 Instagram/Perguntas
-                    {% elif categoria == 'whatsapp_status' %}📯 WhatsApp/Status
-                    {% elif categoria == 'whatsapp_transmissao' %}📯 WhatsApp/Transmissão
-                    {% elif categoria == 'vendas' %}💰 Vendas
-                    {% elif categoria == 'pos_venda' %}📦 Pós-Venda
-                    {% elif categoria == 'parcerias' %}🤝 Parcerias
-                    {% elif categoria == 'expediente' %}🌙 Fim de Expediente
-                    {% endif %}
-                </h3>
-                
-                {% for quest in quests_categoria %}
-                    <div class="quest-card {{ 'concluida' if quest.concluida }} {{ 'desativada' if quest.desativada_ate and quest.desativada_ate > datetime.utcnow() }}">
-                        <h3><a href="/toggle_quest/{{ quest.id }}" style="text-decoration: none;">
-                            {% if quest.concluida %}✔️{% else %}⚔️{% endif %}
-                            {{ quest.titulo }}
-                        </a></h3>
-                        <p>{{ quest.descricao }}</p>
-                        <small>
-                            {{ 'Diária ⏳' if quest.diaria }}{{ 'Semanal 📅' if quest.semanal }}
-                            | Criada em: {{ quest.data_criacao.strftime('%d/%m') }}
-                            {% if quest.concluida and quest.desativada_ate %}
-                                | Disponível em: {{ (quest.desativada_ate - datetime.utcnow()).seconds // 3600 }}h
-                                {{ ((quest.desativada_ate - datetime.utcnow()).seconds % 3600) // 60 }}m
-                            {% endif %}
-                        </small>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
-
+        {% if (usuario_logado and usuario_logado.cavaleiro and usuario_logado.cavaleiro.id == cavaleiro.id) or is_master %}
         <div class="formulario">
             <form method="POST" action="/adicionar_quest">
                 <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
                 <input type="text" name="titulo" placeholder="Nova Quest" required>
                 <textarea name="descricao" placeholder="Detalhes"></textarea>
                 
-                <div class="checkboxes">
+                <div>
                     <label><input type="checkbox" name="diaria"> Diária</label>
                     <label><input type="checkbox" name="semanal"> Semanal</label>
+                    {% if is_master %}
+                        <label><input type="checkbox" name="global_quest"> Quest Global</label>
+                    {% endif %}
                 </div>
                 
                 <select name="categoria" required>
-                    <option value="manha">🌄 Manhã</option>
-                    <option value="dia">🏰 Durante o Dia</option>
-                    <option value="instagram_stories">📜 Instagram/Stories</option>
-                    <option value="instagram_feed">📜 Instagram/Feed</option>
-                    <option value="instagram_perguntas">📜 Instagram/Perguntas</option>
-                    <option value="whatsapp_status">📯 WhatsApp/Status</option>
-                    <option value="whatsapp_transmissao">📯 WhatsApp/Transmissão</option>
-                    <option value="vendas">💰 Vendas</option>
-                    <option value="pos_venda">📦 Pós-Venda</option>
-                    <option value="parcerias">🤝 Parcerias</option>
-                    <option value="expediente">🌙 Fim de Expediente</option>
+                    {% for valor, nome in categorias %}
+                        <option value="{{ valor }}">{{ nome }}</option>
+                    {% endfor %}
                 </select>
                 
                 <button type="submit">Adicionar Quest</button>
             </form>
         </div>
+        {% endif %}
+
+        <div class="grid-container">
+            {% for categoria in categorias %}
+                {% set quests_categoria = quests|selectattr('categoria', 'equalto', categoria.0)|list %}
+                {% if quests_categoria %}
+                    <h3 class="categoria-titulo">{{ categoria.1 }}</h3>
+                    
+                    {% for quest in quests_categoria %}
+                        <div class="quest-card {{ 'concluida' if quest.concluida }}">
+                            <h3><a href="/toggle_quest/{{ quest.id }}" style="text-decoration: none;">
+                                {% if quest.concluida %}✔️{% else %}⚔️{% endif %}
+                                {{ quest.titulo }}
+                            </a></h3>
+                            <p>{{ quest.descricao }}</p>
+                            {% if quest.concluida_por %}
+                                <small>Concluída por: {{ quest.concluida_por }}</small>
+                            {% endif %}
+                            <small>
+                                {{ 'Diária ⏳' if quest.diaria }}{{ 'Semanal 📅' if quest.semanal }}
+                                | Criada em: {{ quest.data_criacao.strftime('%d/%m') }}
+                                {% if quest.concluida and quest.desativada_ate %}
+                                    | Disponível em: {{ (quest.desativada_ate - datetime.utcnow()).seconds // 3600 }}h
+                                    {{ ((quest.desativada_ate - datetime.utcnow()).seconds % 3600) // 60 }}m
+                                {% endif %}
+                            </small>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
 
         <h2 class="categoria-titulo">🏆 Conquistas</h2>
-        {% for conquista in conquistas %}
-            <div class="quest-card">
-                <h3>🏅 {{ conquista.titulo }}</h3>
-                <p>{{ conquista.descricao }}</p>
-                <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
-            </div>
-        {% endfor %}
+        <div class="grid-container">
+            {% for conquista in conquistas %}
+                <div class="quest-card">
+                    <h3>🏅 {{ conquista.titulo }}</h3>
+                    <p>{{ conquista.descricao }}</p>
+                    <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>
