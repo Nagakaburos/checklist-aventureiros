@@ -2,74 +2,7 @@
 <html>
 <head>
     <title>📜 Taverna dos Aventureiros - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --pergaminho: rgba(240, 234, 214, 0.9);
-            --tinta: #3D2B1F;
-        }
-        body {
-            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
-            font-family: 'MedievalSharp', cursive;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .login-container {
-            background-color: var(--pergaminho);
-            border: 3px solid var(--tinta);
-            border-radius: 15px;
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        }
-        h1 {
-            text-align: center;
-            color: var(--tinta);
-            margin-bottom: 30px;
-        }
-        input, button {
-            font-family: 'MedievalSharp', cursive;
-            margin: 10px 0;
-            padding: 12px;
-            border: 2px solid var(--tinta);
-            border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #8B0000;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #A52A2A;
-        }
-        .flash-message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .success {
-            background-color: rgba(0, 128, 0, 0.3);
-            color: darkgreen;
-        }
-        .error {
-            background-color: rgba(255, 0, 0, 0.3);
-            color: darkred;
-        }
-        .register-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-    </style>
+    <!-- Mantenha os estilos anteriores -->
 </head>
 <body>
     <div class="login-container">
@@ -86,6 +19,7 @@
         <form method="POST" action="{{ url_for('login') }}">
             <input type="text" name="username" placeholder="Nome de Usuário" required>
             <input type="password" name="password" placeholder="Senha" required>
+            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
             <button type="submit">Entrar na Taverna</button>
         </form>
         
@@ -94,5 +28,19 @@
             <p><a href="{{ url_for('tabuleiro') }}">Continuar como visitante</a></p>
         </div>
     </div>
+
+    <!-- Adicione este script para tratamento de redirecionamento -->
+    <script>
+        // Verifica se há mensagem de sucesso e redireciona
+        {% if get_flashed_messages(with_categories=true) %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                {% if category == 'success' %}
+                    setTimeout(function() {
+                        window.location.href = "{{ url_for('tabuleiro') }}";
+                    }, 1500);
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </script>
 </body>
 </html>

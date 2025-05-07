@@ -178,12 +178,14 @@ def login():
             session['is_master'] = user.is_master
             
             # Verifica se tem cavaleiro vinculado
-            if user.cavaleiro:
-                session['cavaleiro_id'] = user.cavaleiro.id
-                session['cavaleiro_nome'] = user.cavaleiro.nome
+            cavaleiro = Cavaleiro.query.filter_by(usuario_id=user.id).first()
+            if cavaleiro:
+                session['cavaleiro_id'] = cavaleiro.id
+                session['cavaleiro_nome'] = cavaleiro.nome
             
             flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('tabuleiro'))
+            next_page = request.args.get('next') or url_for('tabuleiro')
+            return redirect(next_page)
         else:
             flash('Usuário ou senha incorretos', 'error')
     
