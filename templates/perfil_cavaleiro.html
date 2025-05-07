@@ -25,6 +25,32 @@
             position: relative;
         }
 
+        .voltar-btn {
+            background: var(--cor-secundaria);
+            color: var(--cor-primaria);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 2px solid var(--cor-primaria);
+            transition: all 0.3s;
+        }
+
+        .voltar-btn:hover {
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+        }
+
+        .user-info {
+            background: var(--pergaminho);
+            padding: 10px 20px;
+            border-radius: 8px;
+            float: right;
+            border: 2px solid var(--cor-primaria);
+            box-shadow: var(--sombra);
+        }
+
         .header-heroi {
             background: var(--cor-primaria);
             color: var(--cor-secundaria);
@@ -34,31 +60,58 @@
             margin-bottom: 2rem;
             box-shadow: var(--sombra);
             position: relative;
+            overflow: hidden;
         }
 
-        .avatar-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 4px solid var(--cor-secundaria);
-            object-fit: cover;
-        }
-
-        .nivel-badge {
+        .nivel-container {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: var(--cor-secundaria);
-            color: var(--cor-primaria);
-            padding: 5px 15px;
-            border-radius: 20px;
+            top: 20px;
+            right: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .nivel-grande {
+            font-size: 3em;
+            line-height: 1;
+            margin: 0;
+            color: var(--cor-secundaria);
+        }
+
+        .rotulo-nivel {
             font-size: 1.2em;
-            border: 2px solid var(--cor-primaria);
+            opacity: 0.8;
+            color: var(--cor-secundaria);
+        }
+
+        .experiencia-container {
+            width: 100%;
+            max-width: 300px;
+            margin: 1rem auto;
+        }
+
+        .barra-experiencia {
+            width: 100%;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progresso-experiencia {
+            height: 100%;
+            background: var(--cor-secundaria);
+            width: {{ progresso }}%;
+            transition: width 0.5s;
+        }
+
+        .info-experiencia {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9em;
         }
 
         .quest-card {
@@ -68,12 +121,6 @@
             padding: 1.5rem;
             margin: 1rem 0;
             box-shadow: var(--sombra);
-            position: relative;
-        }
-
-        .mestre-quest {
-            border-left: 5px solid #FFD700;
-            background: rgba(255, 215, 0, 0.1);
         }
 
         .concluida {
@@ -87,12 +134,17 @@
             );
         }
 
+        .mestre-quest {
+            border-left: 5px solid var(--cor-secundaria);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
         .badge-mestre {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #800080;
-            color: white;
+            background: var(--cor-secundaria);
+            color: var(--cor-primaria);
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 0.8em;
@@ -122,6 +174,11 @@
             transition: all 0.3s;
         }
 
+        .btn-medieval:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 8px rgba(0, 0, 0, 0.2);
+        }
+
         .conquista-card {
             background: var(--pergaminho);
             border: 2px solid var(--cor-primaria);
@@ -132,44 +189,56 @@
         }
 
         .global-conquista {
-            border-color: #FFD700;
+            border-color: var(--cor-secundaria);
             background: rgba(255, 215, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{{ url_for('tabuleiro') }}" class="btn-medieval">← Voltar</a>
+        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
         
+        <div class="user-info">
+            🧙 {{ usuario_logado.username if usuario_logado else 'Visitante' }}
+            {% if is_master %}(Mestre){% endif %}
+            {% if usuario_logado %}<a href="{{ url_for('logout') }}" style="margin-left:15px;">🚪 Sair</a>{% endif %}
+        </div>
+
         <div class="header-heroi">
-            <div class="avatar-container">
-                {% if cavaleiro.imagem %}
-                    <img src="{{ url_for('static', filename='uploads/' + cavaleiro.imagem) }}" class="avatar">
-                {% else %}
-                    <div class="avatar" style="background: var(--cor-secundaria);"></div>
-                {% endif %}
-                <div class="nivel-badge">Nível {{ cavaleiro.nivel }}</div>
+            <div class="nivel-container">
+                <div class="nivel-grande">{{ cavaleiro.nivel }}</div>
+                <div class="rotulo-nivel">NÍVEL</div>
             </div>
             <h1>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h1>
             <h2>{{ cavaleiro.classe }}</h2>
+            
+            <div class="experiencia-container">
+                <div class="barra-experiencia">
+                    <div class="progresso-experiencia"></div>
+                </div>
+                <div class="info-experiencia">
+                    <span>Experiência: {{ cavaleiro.experiencia }}/{{ cavaleiro.nivel * 100 }}</span>
+                    <span>Próximo nível: {{ (cavaleiro.nivel * 100) - cavaleiro.experiencia }}</span>
+                </div>
+            </div>
         </div>
 
         {% if usuario_logado and (usuario_logado.cavaleiro.id == cavaleiro.id or is_master) %}
         <div class="formulario-quest">
             <h3>📜 Nova Missão</h3>
-            <form method="POST" action="/adicionar_quest" enctype="multipart/form-data">
+            <form method="POST" action="/adicionar_quest">
                 <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
                 
                 <div class="input-group">
-                    <input type="text" name="titulo" placeholder="Nome da Missão" required>
+                    <input type="text" name="titulo" class="input-medieval" placeholder="Nome da Missão" required>
                 </div>
                 
                 <div class="input-group">
-                    <textarea name="descricao" rows="3" placeholder="Descrição"></textarea>
+                    <textarea name="descricao" class="input-medieval" rows="3" placeholder="Descrição"></textarea>
                 </div>
                 
                 <div class="input-group">
-                    <select name="categoria" required>
+                    <select name="categoria" class="select-medieval" required>
                         {% for valor, nome in categorias %}
                             <option value="{{ valor }}">{{ nome }}</option>
                         {% endfor %}
@@ -177,20 +246,28 @@
                 </div>
                 
                 <div class="input-group">
-                    <label>
-                        <input type="checkbox" name="diaria"> Diária
+                    <label class="checkbox-medieval">
+                        <input type="checkbox" name="diaria">
+                        <span class="checkmark"></span>
+                        Missão Diária
                     </label>
-                    <label>
-                        <input type="checkbox" name="semanal"> Semanal
+                    
+                    <label class="checkbox-medieval">
+                        <input type="checkbox" name="semanal">
+                        <span class="checkmark"></span>
+                        Missão Semanal
                     </label>
+                    
                     {% if is_master %}
-                    <label>
-                        <input type="checkbox" name="mestre_quest"> Missão do Mestre
+                    <label class="checkbox-medieval">
+                        <input type="checkbox" name="mestre_quest">
+                        <span class="checkmark"></span>
+                        Missão do Mestre
                     </label>
                     {% endif %}
                 </div>
                 
-                <button type="submit" class="btn-medieval">Adicionar</button>
+                <button type="submit" class="btn-medieval">🏹 Adicionar Missão</button>
             </form>
         </div>
         {% endif %}
@@ -208,44 +285,27 @@
                     {% if quest.concluida_por %}
                         <small>Concluída por: {{ quest.concluida_por }}</small>
                     {% endif %}
+                    <div style="margin-top:10px;">
+                        <small>Experiência: +{{ quest.experiencia_recompensa }}</small>
+                    </div>
                 </div>
             {% endfor %}
         {% endfor %}
 
         <h2>🏆 Conquistas</h2>
-        {% if usuario_logado and (usuario_logado.cavaleiro.id == cavaleiro.id or is_master) %}
-        <div class="formulario-quest">
-            <h3>🌟 Nova Conquista</h3>
-            <form method="POST" action="/adicionar_conquista">
-                <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
-                
-                <div class="input-group">
-                    <input type="text" name="titulo" placeholder="Título" required>
-                </div>
-                
-                <div class="input-group">
-                    <textarea name="descricao" rows="3" placeholder="Descrição" required></textarea>
-                </div>
-                
-                {% if is_master %}
-                <label>
-                    <input type="checkbox" name="global_conquista"> Conquista Global
-                </label>
-                {% endif %}
-                
-                <button type="submit" class="btn-medieval">Adicionar</button>
-            </form>
-        </div>
-        {% endif %}
-
         {% for conquista in conquistas %}
             <div class="conquista-card {{ 'global-conquista' if conquista.global_conquista }}">
-                <h3>🏅 {{ conquista.titulo }}</h3>
+                <h3>{{ conquista.titulo }}</h3>
                 <p>{{ conquista.descricao }}</p>
                 <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
                 {% if conquista.global_conquista %}
                     <div class="badge-mestre">Global</div>
                 {% endif %}
+            </div>
+        {% else %}
+            <div class="conquista-card">
+                <h3>Nenhuma conquista ainda...</h3>
+                <p>Complete missões para ganhar conquistas!</p>
             </div>
         {% endfor %}
     </div>

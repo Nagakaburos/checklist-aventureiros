@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)  # Adicionando suporte a migrações
+migrate = Migrate(app, db)
 
 CLASSES = {
     'Guerreiro': {'icone': '⚔️', 'cor_primaria': '#8B0000', 'cor_secundaria': '#C5B358'},
@@ -50,6 +50,7 @@ CATEGORIAS = [
     ('expediente', '🌙 Fim de Expediente')
 ]
 
+# Modelos
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -63,6 +64,7 @@ class Cavaleiro(db.Model):
     classe = db.Column(db.String(20), default='Guerreiro')
     imagem = db.Column(db.String(100))
     nivel = db.Column(db.Integer, default=1)
+    experiencia = db.Column(db.Integer, default=0)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     quests = db.relationship('Quest', backref='cavaleiro', lazy=True)
     conquistas = db.relationship('Conquista', backref='cavaleiro', lazy=True)
@@ -82,6 +84,7 @@ class Quest(db.Model):
     desativada_ate = db.Column(db.DateTime)
     cavaleiro_id = db.Column(db.Integer, db.ForeignKey('cavaleiro.id'))
     concluida_por = db.Column(db.String(50))
+    experiencia_recompensa = db.Column(db.Integer, default=10)
 
 class Conquista(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,11 +93,11 @@ class Conquista(db.Model):
     data = db.Column(db.DateTime, default=datetime.utcnow)
     cavaleiro_id = db.Column(db.Integer, db.ForeignKey('cavaleiro.id'))
     autor_nome = db.Column(db.String(50), default='Aventureiro')
-    global_conquista = db.Column(db.Boolean, default=False)  # Coluna corrigida
+    global_conquista = db.Column(db.Boolean, default=False)
 
+# Helpers
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 def criar_tabelas():
     with app.app_context():
@@ -116,30 +119,20 @@ def criar_tabelas():
 
 criar_tabelas()
 
+# Agendador para resetar quests
 def resetar_quests():
     with app.app_context():
         agora = datetime.utcnow()
-        
-        # Resetar quests diárias
         Quest.query.filter(
             Quest.diaria == True,
             Quest.desativada_ate <= agora
-        ).update({
-            'concluida': False,
-            'desativada_ate': None,
-            'concluida_por': None
-        })
+        ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
         
-        # Resetar quests semanais (domingo)
-        if agora.weekday() == 6:
+        if agora.weekday() == 6:  # Domingo
             Quest.query.filter(
                 Quest.semanal == True,
                 Quest.desativada_ate <= agora
-            ).update({
-                'concluida': False,
-                'desativada_ate': None,
-                'concluida_por': None
-            })
+            ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
         
         db.session.commit()
 
@@ -148,6 +141,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler.add_job(resetar_quests, 'interval', hours=1)
     scheduler.start()
 
+# Autenticação
 def usuario_logado():
     return Usuario.query.get(session.get('user_id'))
 
@@ -155,6 +149,13 @@ def is_master():
     user = usuario_logado()
     return user and user.is_master
 
+def calcular_nivel_experiencia(cavaleiro):
+    nivel = cavaleiro.nivel
+    exp_necessario = nivel * 100
+    progresso = min((cavaleiro.experiencia / exp_necessario) * 100, 100)
+    return nivel, progresso
+
+# Rotas de Autenticação
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -190,20 +191,23 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# Middleware de segurança
 @app.before_request
 def requer_login():
-    if request.endpoint not in ['login', 'registrar', 'static', 'tabuleiro', 'conquistas'] and 'user_id' not in session:
+    rotas_publicas = ['login', 'registrar', 'static', 'tabuleiro', 'conquistas']
+    if request.endpoint not in rotas_publicas and 'user_id' not in session:
         return redirect(url_for('login'))
 
+# Rotas Principais
 @app.route('/')
 def tabuleiro():
-    conquistas_globais = Conquista.query.filter_by(global_conquista=True).order_by(Conquista.data.desc()).limit(5).all()
+    conquistas = Conquista.query.filter_by(global_conquista=True).order_by(Conquista.data.desc()).limit(5).all()
     cavaleiros = Cavaleiro.query.all()
     quests_globais = Quest.query.filter_by(global_quest=True).all()
     return render_template('tabuleiro.html',
                         cavaleiros=cavaleiros,
                         classes=CLASSES,
-                        conquistas=conquistas_globais,
+                        conquistas=conquistas,
                         categorias=CATEGORIAS,
                         quests_globais=quests_globais,
                         is_master=is_master(),
@@ -212,6 +216,7 @@ def tabuleiro():
 @app.route('/cavaleiro/<int:cavaleiro_id>')
 def perfil_cavaleiro(cavaleiro_id):
     cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)
+    nivel, progresso = calcular_nivel_experiencia(cavaleiro)
     quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id, global_quest=False).all()
     conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).all()
     return render_template('perfil_cavaleiro.html',
@@ -220,9 +225,12 @@ def perfil_cavaleiro(cavaleiro_id):
                         quests=quests,
                         conquistas=conquistas,
                         categorias=CATEGORIAS,
+                        nivel=nivel,
+                        progresso=progresso,
                         is_master=is_master(),
                         usuario_logado=usuario_logado())
 
+# CRUD Cavaleiros
 @app.route('/adicionar_cavaleiro', methods=['POST'])
 def adicionar_cavaleiro():
     if not usuario_logado():
@@ -252,6 +260,7 @@ def adicionar_cavaleiro():
         db.session.rollback()
     return redirect(url_for('tabuleiro'))
 
+# CRUD Quests
 @app.route('/adicionar_quest', methods=['POST'])
 def adicionar_quest():
     if not usuario_logado():
@@ -267,7 +276,8 @@ def adicionar_quest():
             global_quest='global_quest' in request.form and is_master(),
             mestre_quest='mestre_quest' in request.form and is_master(),
             categoria=request.form['categoria'],
-            cavaleiro_id=request.form['cavaleiro_id']
+            cavaleiro_id=request.form['cavaleiro_id'],
+            experiencia_recompensa=int(request.form.get('experiencia_recompensa', 10))
         )
         db.session.add(nova_quest)
         db.session.commit()
@@ -297,13 +307,22 @@ def toggle_quest(quest_id):
     
     try:
         quest.concluida = not quest.concluida
-        quest.ultima_conclusao = datetime.utcnow() if quest.concluida else None
-        quest.concluida_por = user.cavaleiro.nome if quest.concluida else None
         
-        if quest.mestre_quest and quest.concluida:
+        if quest.concluida:
+            quest.ultima_conclusao = datetime.utcnow()
+            quest.concluida_por = user.cavaleiro.nome if user.cavaleiro else user.username
+            
             cavaleiro = Cavaleiro.query.get(quest.cavaleiro_id)
-            cavaleiro.nivel += 1
-            flash(f'Nível aumentado para {cavaleiro.nivel}!', 'success')
+            cavaleiro.experiencia += quest.experiencia_recompensa
+            
+            exp_necessario = cavaleiro.nivel * 100
+            if cavaleiro.experiencia >= exp_necessario:
+                cavaleiro.nivel += 1
+                cavaleiro.experiencia = 0
+                flash(f'🎉 {cavaleiro.nome} subiu para o nível {cavaleiro.nivel}!', 'success')
+        else:
+            quest.ultima_conclusao = None
+            quest.concluida_por = None
         
         db.session.commit()
     except Exception as e:
@@ -312,6 +331,7 @@ def toggle_quest(quest_id):
     
     return redirect(request.referrer)
 
+# CRUD Conquistas
 @app.route('/adicionar_conquista', methods=['POST'])
 def adicionar_conquista():
     if not usuario_logado():

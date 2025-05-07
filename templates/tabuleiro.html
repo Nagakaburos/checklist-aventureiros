@@ -9,20 +9,20 @@
             --tinta: #3D2B1F;
             --sangue-dragao: #8B0000;
         }
-        
+
         body {
             font-family: 'MedievalSharp', cursive;
             background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
             margin: 0;
             padding: 20px;
+            color: var(--tinta);
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            position: relative;
         }
-        
+
         .header-taverna {
             text-align: center;
             margin: 2rem 0;
@@ -31,103 +31,114 @@
             border: 3px solid var(--sangue-dragao);
             border-radius: 15px;
         }
-        
+
         .grid-cavaleiros {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
             margin: 2rem 0;
         }
-        
+
         .cavaleiro-card {
             background: var(--pergaminho);
-            border: 3px solid var(--tinta);
+            border: 3px solid;
             border-radius: 15px;
             padding: 1.5rem;
-            transition: transform 0.3s;
             position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
         }
-        
+
         .cavaleiro-card:hover {
             transform: translateY(-5px);
         }
-        
-        .quest-global {
-            border-left: 5px solid var(--sangue-dragao);
-            margin: 1rem 0;
-            padding: 1rem;
-            background: rgba(139, 0, 0, 0.1);
+
+        .nivel-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 1.1em;
+            border: 2px solid var(--cor-secundaria);
         }
-        
+
+        .cavaleiro-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .cavaleiro-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--cor-secundaria);
+        }
+
         .btn-medieval {
             background: var(--sangue-dragao);
             color: white;
             padding: 0.5rem 1rem;
-            border: 2px solid var(--tinta);
             border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
+            margin-top: 1rem;
+            transition: all 0.3s;
         }
-        
+
         .btn-medieval:hover {
-            background: var(--tinta);
-            color: white;
+            background: #A52A2A;
+        }
+
+        .user-info {
+            background: var(--pergaminho);
+            padding: 10px;
+            border-radius: 5px;
+            float: right;
+            border: 1px solid var(--sangue-dragao);
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="user-info">
+            {% if usuario_logado %}
+                🧙 {{ usuario_logado.username }}
+                {% if is_master %}(Mestre){% endif %}
+                <a href="{{ url_for('logout') }}" style="margin-left: 10px;">Sair</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn-medieval">Entrar</a>
+            {% endif %}
+        </div>
+
         <div class="header-taverna">
             <h1>🏰 Taverna dos Aventureiros</h1>
-            <div class="controles-usuario">
-                {% if usuario_logado %}
-                    <span>🧙 {{ usuario_logado.username }}</span>
-                    <a href="{{ url_for('logout') }}" class="btn-medieval">Sair</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn-medieval">Entrar</a>
-                    <a href="{{ url_for('registrar') }}" class="btn-medieval">Registrar</a>
-                {% endif %}
-            </div>
+            <p>Onde os heróis se reúnem e as lendas nascem</p>
         </div>
 
-        <!-- Seção de Quests Globais -->
-        <div class="quests-globais">
-            <h2>🗺️ Missões Globais</h2>
-            {% for quest in quests_globais %}
-                <div class="quest-global">
-                    <h3>{{ quest.titulo }}</h3>
-                    <p>{{ quest.descricao }}</p>
-                    {% if usuario_logado %}
-                        <a href="/toggle_quest/{{ quest.id }}" class="btn-medieval">
-                            {% if quest.concluida %}Desfazer{% else %}Concluir{% endif %}
-                        </a>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-
-        <!-- Grid de Cavaleiros -->
         <div class="grid-cavaleiros">
             {% for cavaleiro in cavaleiros %}
-                <div class="cavaleiro-card" 
-                     style="border-color: {{ classes[cavaleiro.classe].cor_primaria }}">
-                    <h2>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h2>
-                    <p>Classe: {{ cavaleiro.classe }}</p>
-                    <a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" 
-                       class="btn-medieval">
-                        Ver Missões
-                    </a>
+            <div class="cavaleiro-card" style="border-color: {{ classes[cavaleiro.classe].cor_primaria }}">
+                <div class="nivel-badge" style="background: {{ classes[cavaleiro.classe].cor_primaria }}; color: {{ classes[cavaleiro.classe].cor_secundaria }}">
+                    Nível {{ cavaleiro.nivel }}
                 </div>
+                <div class="cavaleiro-header">
+                    {% if cavaleiro.imagem %}
+                    <img src="{{ url_for('static', filename='uploads/' + cavaleiro.imagem) }}" class="cavaleiro-avatar">
+                    {% else %}
+                    <div class="cavaleiro-avatar" style="background: {{ classes[cavaleiro.classe].cor_primaria }};"></div>
+                    {% endif %}
+                    <h2>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h2>
+                </div>
+                <p><strong>Classe:</strong> {{ cavaleiro.classe }}</p>
+                <a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" class="btn-medieval">Ver Perfil</a>
+            </div>
             {% endfor %}
-        </div>
-
-        <!-- Link para Conquistas -->
-        <div class="conquistas-link">
-            <a href="{{ url_for('conquistas') }}" class="btn-medieval">
-                🏆 Ver Todas as Conquistas
-            </a>
         </div>
     </div>
 </body>
