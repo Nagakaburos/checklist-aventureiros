@@ -7,66 +7,180 @@
         :root {
             --cor-primaria: {{ classes[cavaleiro.classe].cor_primaria }};
             --cor-secundaria: {{ classes[cavaleiro.classe].cor_secundaria }};
-            --pergaminho: rgba(240, 234, 214, 0.8);
+            --pergaminho: rgba(240, 234, 214, 0.9);
+            --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         body {
             font-family: 'MedievalSharp', cursive;
             background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
+            margin: 0;
             padding: 20px;
+            color: #3D2B1F;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
         }
-        .header-heroi {
-            background: var(--cor-primaria);
-            color: var(--cor-secundaria);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .quest-card {
-            background: var(--pergaminho);
-            border: 2px solid var(--cor-primaria);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
-        .concluida {
-            opacity: 0.6;
-            background: repeating-linear-gradient(
-                -45deg,
-                transparent,
-                transparent 10px,
-                rgba(0,0,0,0.1) 10px,
-                rgba(0,0,0,0.1) 20px
-            );
-        }
+
         .voltar-btn {
             background: var(--cor-secundaria);
             color: var(--cor-primaria);
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 8px;
             text-decoration: none;
             display: inline-block;
             margin-bottom: 20px;
+            border: 2px solid var(--cor-primaria);
+            transition: all 0.3s;
         }
+
+        .voltar-btn:hover {
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+        }
+
         .user-info {
             background: var(--pergaminho);
-            padding: 10px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 8px;
             float: right;
+            border: 2px solid var(--cor-primaria);
+            box-shadow: var(--sombra);
+        }
+
+        .header-heroi {
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--sombra);
+        }
+
+        .formulario-quest {
+            background: var(--pergaminho);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 3px solid var(--cor-primaria);
+            box-shadow: var(--sombra);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-medieval {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--cor-primaria);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .select-medieval {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--cor-primaria);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .checkbox-medieval {
+            display: block;
+            position: relative;
+            padding-left: 35px;
+            margin: 1rem 0;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .checkbox-medieval input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 25px;
+            width: 25px;
+            background-color: #eee;
+            border: 2px solid var(--cor-primaria);
+            border-radius: 5px;
+        }
+
+        .checkbox-medieval:hover input ~ .checkmark {
+            background-color: #ccc;
+        }
+
+        .checkbox-medieval input:checked ~ .checkmark {
+            background-color: var(--cor-primaria);
+        }
+
+        .btn-medieval {
+            background: var(--cor-primaria);
+            color: var(--cor-secundaria);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            width: 100%;
+            box-shadow: var(--sombra);
+        }
+
+        .btn-medieval:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .quest-card {
+            background: var(--pergaminho);
+            border: 2px solid var(--cor-primaria);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: var(--sombra);
+        }
+
+        .concluida {
+            opacity: 0.7;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(0,0,0,0.05),
+                rgba(0,0,0,0.05) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        .categoria-titulo {
+            color: var(--cor-primaria);
+            border-bottom: 2px solid var(--cor-primaria);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar</a>
+        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
+        
         <div class="user-info">
             🧙 {{ usuario_logado.username if usuario_logado else 'Visitante' }}
-            {% if is_master %}(Mestre){% endif %}
-            {% if usuario_logado %}<a href="{{ url_for('logout') }}">Sair</a>{% endif %}
+            {% if is_master %}<span>(Mestre)</span>{% endif %}
+            {% if usuario_logado %}<a href="{{ url_for('logout') }}" style="margin-left:15px;">🚪 Sair</a>{% endif %}
         </div>
 
         <div class="header-heroi">
@@ -75,46 +189,96 @@
         </div>
 
         {% if usuario_logado and (usuario_logado.cavaleiro.id == cavaleiro.id or is_master) %}
-        <div class="quest-card">
+        <div class="formulario-quest">
+            <h3>📜 Nova Missão</h3>
             <form method="POST" action="/adicionar_quest">
                 <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
-                <input type="text" name="titulo" placeholder="Nova Quest" required>
-                <textarea name="descricao" placeholder="Descrição"></textarea>
-                <div>
-                    <label><input type="checkbox" name="diaria"> Diária</label>
-                    <label><input type="checkbox" name="semanal"> Semanal</label>
-                    {% if is_master %}<label><input type="checkbox" name="global_quest"> Global</label>{% endif %}
+                
+                <div class="input-group">
+                    <input type="text" name="titulo" class="input-medieval" 
+                           placeholder="Nome da Missão" required>
                 </div>
-                <select name="categoria" required>
-                    {% for valor, nome in categorias %}
-                        <option value="{{ valor }}">{{ nome }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit">Adicionar Quest</button>
+                
+                <div class="input-group">
+                    <textarea name="descricao" class="input-medieval" 
+                              rows="3" placeholder="Descrição da Missão"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <select name="categoria" class="select-medieval" required>
+                        {% for valor, nome in categorias %}
+                            <option value="{{ valor }}">{{ nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label class="checkbox-medieval">
+                        <input type="checkbox" name="diaria">
+                        <span class="checkmark"></span>
+                        Missão Diária
+                    </label>
+                    
+                    <label class="checkbox-medieval">
+                        <input type="checkbox" name="semanal">
+                        <span class="checkmark"></span>
+                        Missão Semanal
+                    </label>
+                    
+                    {% if is_master %}
+                    <label class="checkbox-medieval">
+                        <input type="checkbox" name="global_quest">
+                        <span class="checkmark"></span>
+                        Missão Global
+                    </label>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn-medieval">
+                    🏹 Adicionar Missão
+                </button>
             </form>
         </div>
         {% endif %}
 
         {% for categoria in categorias %}
-            <h3>{{ categoria.1 }}</h3>
+            <h3 class="categoria-titulo">{{ categoria.1 }}</h3>
             {% for quest in quests|selectattr('categoria', 'equalto', categoria.0) %}
                 <div class="quest-card {{ 'concluida' if quest.concluida }}">
-                    <a href="/toggle_quest/{{ quest.id }}">
-                        {% if quest.concluida %}✔️{% else %}⚔️{% endif %}
-                        {{ quest.titulo }}
+                    <a href="/toggle_quest/{{ quest.id }}" style="text-decoration:none;color:inherit;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:1.5em;">
+                                {% if quest.concluida %}✅{% else %}⚔️{% endif %}
+                            </span>
+                            <h3 style="margin:0;">{{ quest.titulo }}</h3>
+                            {% if quest.global_quest %}<small>(Global)</small>{% endif %}
+                        </div>
+                        <p>{{ quest.descricao }}</p>
+                        {% if quest.concluida_por %}
+                            <small>Concluída por: {{ quest.concluida_por }}</small>
+                        {% endif %}
+                        <div style="margin-top:10px;font-size:0.9em;">
+                            <span>Criada em: {{ quest.data_criacao.strftime('%d/%m/%Y') }}</span>
+                            {% if quest.desativada_ate %}
+                                | Disponível em: {{ quest.desativada_ate.strftime('%d/%m %H:%M') }}
+                            {% endif %}
+                        </div>
                     </a>
-                    <p>{{ quest.descricao }}</p>
-                    {% if quest.concluida_por %}<small>Concluída por: {{ quest.concluida_por }}</small>{% endif %}
                 </div>
             {% endfor %}
         {% endfor %}
 
-        <h2>🏆 Conquistas</h2>
+        <h2 class="categoria-titulo">🏆 Conquistas</h2>
         {% for conquista in conquistas %}
             <div class="quest-card">
-                <h3>{{ conquista.titulo }}</h3>
+                <h3>🏅 {{ conquista.titulo }}</h3>
                 <p>{{ conquista.descricao }}</p>
-                <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+                    <span style="color:{{ classes[conquista.cavaleiro.classe].cor_primaria }};">
+                        {{ classes[conquista.cavaleiro.classe].icone }} {{ conquista.cavaleiro.nome }}
+                    </span>
+                </div>
             </div>
         {% endfor %}
     </div>

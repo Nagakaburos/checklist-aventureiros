@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🏆 Conquistas da Guilda</title>
+    <!-- Estilos consistentes com outras páginas -->
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 Feitos Épicos</h1>
+        
+        <div class="grid-conquistas">
+            {% for conquista in conquistas %}
+                <div class="conquista-card" 
+                     style="border-color: {{ classes[conquista.cavaleiro.classe].cor_primaria }}">
+                    <div class="cabecalho-conquista">
+                        <h3>{{ conquista.titulo }}</h3>
+                        <span class="classe-cavaleiro">
+                            {{ classes[conquista.cavaleiro.classe].icone }}
+                            {{ conquista.cavaleiro.nome }}
+                        </span>
+                    </div>
+                    <p>{{ conquista.descricao }}</p>
+                    <div class="data-conquista">
+                        {{ conquista.data.strftime('%d/%m/%Y') }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

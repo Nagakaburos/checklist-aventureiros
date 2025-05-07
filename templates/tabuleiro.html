@@ -5,76 +5,130 @@
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         :root {
-            --pergaminho: rgba(240, 234, 214, 0.8);
+            --pergaminho: rgba(240, 234, 214, 0.9);
             --tinta: #3D2B1F;
+            --sangue-dragao: #8B0000;
         }
+        
         body {
             font-family: 'MedievalSharp', cursive;
             background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
+            margin: 0;
             padding: 20px;
         }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
         }
+        
+        .header-taverna {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: var(--pergaminho);
+            border: 3px solid var(--sangue-dragao);
+            border-radius: 15px;
+        }
+        
+        .grid-cavaleiros {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 2rem 0;
+        }
+        
         .cavaleiro-card {
             background: var(--pergaminho);
-            border: 3px solid;
+            border: 3px solid var(--tinta);
             border-radius: 15px;
-            padding: 15px;
-            margin: 10px;
-            display: inline-block;
-            width: 250px;
+            padding: 1.5rem;
+            transition: transform 0.3s;
+            position: relative;
         }
-        .user-controls {
-            text-align: right;
-            margin-bottom: 20px;
+        
+        .cavaleiro-card:hover {
+            transform: translateY(-5px);
         }
-        .login-btn {
-            background: #8B0000;
+        
+        .quest-global {
+            border-left: 5px solid var(--sangue-dragao);
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(139, 0, 0, 0.1);
+        }
+        
+        .btn-medieval {
+            background: var(--sangue-dragao);
             color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--tinta);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
             text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-medieval:hover {
+            background: var(--tinta);
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="user-controls">
-            {% if usuario_logado %}
-                <span>Bem-vindo, {{ usuario_logado.username }} {% if is_master %}(Mestre){% endif %}</span>
-                <a href="{{ url_for('logout') }}" class="login-btn">Sair</a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="login-btn">Entrar</a>
-            {% endif %}
-        </div>
-
-        <h1>🏰 Taverna dos Aventureiros</h1>
-
-        {% if usuario_logado and not usuario_logado.cavaleiro %}
-        <div class="cavaleiro-card">
-            <form method="POST" action="/adicionar_cavaleiro">
-                <input type="text" name="nome" placeholder="Nome do Cavaleiro" required>
-                <select name="classe" required>
-                    {% for classe in classes %}
-                        <option value="{{ classe }}">{{ classes[classe].icone }} {{ classe }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit">Criar Cavaleiro</button>
-            </form>
-        </div>
-        {% endif %}
-
-        {% for cavaleiro in cavaleiros %}
-            <div class="cavaleiro-card" style="border-color: {{ classes[cavaleiro.classe].cor_primaria }}">
-                <h2>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h2>
-                <p>{{ cavaleiro.classe }}</p>
-                <a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" class="login-btn">
-                    Ver Perfil
-                </a>
+        <div class="header-taverna">
+            <h1>🏰 Taverna dos Aventureiros</h1>
+            <div class="controles-usuario">
+                {% if usuario_logado %}
+                    <span>🧙 {{ usuario_logado.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="btn-medieval">Sair</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-medieval">Entrar</a>
+                    <a href="{{ url_for('registrar') }}" class="btn-medieval">Registrar</a>
+                {% endif %}
             </div>
-        {% endfor %}
+        </div>
+
+        <!-- Seção de Quests Globais -->
+        <div class="quests-globais">
+            <h2>🗺️ Missões Globais</h2>
+            {% for quest in quests_globais %}
+                <div class="quest-global">
+                    <h3>{{ quest.titulo }}</h3>
+                    <p>{{ quest.descricao }}</p>
+                    {% if usuario_logado %}
+                        <a href="/toggle_quest/{{ quest.id }}" class="btn-medieval">
+                            {% if quest.concluida %}Desfazer{% else %}Concluir{% endif %}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Grid de Cavaleiros -->
+        <div class="grid-cavaleiros">
+            {% for cavaleiro in cavaleiros %}
+                <div class="cavaleiro-card" 
+                     style="border-color: {{ classes[cavaleiro.classe].cor_primaria }}">
+                    <h2>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h2>
+                    <p>Classe: {{ cavaleiro.classe }}</p>
+                    <a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" 
+                       class="btn-medieval">
+                        Ver Missões
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Link para Conquistas -->
+        <div class="conquistas-link">
+            <a href="{{ url_for('conquistas') }}" class="btn-medieval">
+                🏆 Ver Todas as Conquistas
+            </a>
+        </div>
     </div>
 </body>
 </html>
