@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>🏰 Taverna dos Aventureiros - {% block title %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pergaminho: rgba(240, 234, 214, 0.9);
+            --tinta: #3D2B1F;
+            --sangue-dragao: #8B0000;
+        }
+
+        body {
+            font-family: 'MedievalSharp', cursive;
+            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
+            margin: 20px;
+            color: var(--tinta);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .cavaleiro-card {
+            background: var(--pergaminho);
+            border: 3px solid var(--tinta);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+        }
+
+        .btn-medieval {
+            background: var(--sangue-dragao);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--tinta);
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
