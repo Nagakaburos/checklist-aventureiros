@@ -1,93 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>📜 Taverna dos Aventureiros - Login</title>
+    <title>🏰 Taverna dos Aventureiros</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         :root {
-            --pergaminho: rgba(240, 234, 214, 0.9);
+            --pergaminho: rgba(240, 234, 214, 0.8);
             --tinta: #3D2B1F;
         }
         body {
-            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
             font-family: 'MedievalSharp', cursive;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
             padding: 20px;
         }
-        .login-container {
-            background-color: var(--pergaminho);
-            border: 3px solid var(--tinta);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .cavaleiro-card {
+            background: var(--pergaminho);
+            border: 3px solid;
             border-radius: 15px;
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin: 10px;
+            display: inline-block;
+            width: 250px;
         }
-        h1 {
-            text-align: center;
-            color: var(--tinta);
-            margin-bottom: 30px;
+        .user-controls {
+            text-align: right;
+            margin-bottom: 20px;
         }
-        input, button {
-            font-family: 'MedievalSharp', cursive;
-            margin: 10px 0;
-            padding: 12px;
-            border: 2px solid var(--tinta);
-            border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #8B0000;
+        .login-btn {
+            background: #8B0000;
             color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #A52A2A;
-        }
-        .flash-message {
-            padding: 10px;
-            margin: 10px 0;
+            padding: 10px 15px;
             border-radius: 5px;
-            text-align: center;
-        }
-        .success {
-            background-color: rgba(0, 128, 0, 0.3);
-            color: darkgreen;
-        }
-        .error {
-            background-color: rgba(255, 0, 0, 0.3);
-            color: darkred;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>🏰 Taverna dos Aventureiros</h1>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
+    <div class="container">
+        <div class="user-controls">
+            {% if usuario_logado %}
+                <span>Bem-vindo, {{ usuario_logado.username }} {% if is_master %}(Mestre){% endif %}</span>
+                <a href="{{ url_for('logout') }}" class="login-btn">Sair</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="login-btn">Entrar</a>
             {% endif %}
-        {% endwith %}
-        
-        <form method="POST" action="{{ url_for('login') }}">
-            <input type="text" name="username" placeholder="Nome de Usuário" required>
-            <input type="password" name="password" placeholder="Senha" required>
-            <button type="submit">Entrar na Taverna</button>
-        </form>
-        
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="{{ url_for('tabuleiro') }}" style="color: var(--tinta);">Continuar como visitante</a>
-        </p>
+        </div>
+
+        <h1>🏰 Taverna dos Aventureiros</h1>
+
+        {% if usuario_logado and not usuario_logado.cavaleiro %}
+        <div class="cavaleiro-card">
+            <form method="POST" action="/adicionar_cavaleiro">
+                <input type="text" name="nome" placeholder="Nome do Cavaleiro" required>
+                <select name="classe" required>
+                    {% for classe in classes %}
+                        <option value="{{ classe }}">{{ classes[classe].icone }} {{ classe }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Criar Cavaleiro</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% for cavaleiro in cavaleiros %}
+            <div class="cavaleiro-card" style="border-color: {{ classes[cavaleiro.classe].cor_primaria }}">
+                <h2>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h2>
+                <p>{{ cavaleiro.classe }}</p>
+                <a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" class="login-btn">
+                    Ver Perfil
+                </a>
+            </div>
+        {% endfor %}
     </div>
 </body>
 </html>

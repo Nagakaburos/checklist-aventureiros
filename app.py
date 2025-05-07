@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Inicialização do Flask
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key')
 
@@ -22,7 +21,6 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 db = SQLAlchemy(app)
 
-# Constantes
 CLASSES = {
     'Guerreiro': {'icone': '⚔️', 'cor_primaria': '#8B0000', 'cor_secundaria': '#C5B358'},
     'Mago': {'icone': '🔮', 'cor_primaria': '#4B0082', 'cor_secundaria': '#ADD8E6'},
@@ -46,7 +44,6 @@ CATEGORIAS = [
     ('expediente', '🌙 Fim de Expediente')
 ]
 
-# Modelos
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -58,9 +55,9 @@ class Cavaleiro(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), unique=True, nullable=False)
     classe = db.Column(db.String(20), default='Guerreiro')
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     quests = db.relationship('Quest', backref='cavaleiro', lazy=True)
     conquistas = db.relationship('Conquista', backref='cavaleiro', lazy=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
 
 class Quest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,309 +82,159 @@ class Conquista(db.Model):
     cavaleiro_id = db.Column(db.Integer, db.ForeignKey('cavaleiro.id'))
     autor_nome = db.Column(db.String(50), default='Aventureiro')
 
-# Inicialização do Banco
 def criar_tabelas():
     with app.app_context():
-        try:
-            db.create_all()
-            
-            # Criar usuário mestre padrão se não existir
-            if not Usuario.query.filter_by(is_master=True).first():
-                mestre = Usuario(
-                    username='mestre',
-                    password_hash=generate_password_hash('mestre123'),
-                    is_master=True
-                )
-                db.session.add(mestre)
-                db.session.commit()
-                
-                cavaleiro_mestre = Cavaleiro(
-                    nome='Mestre da Guilda',
-                    classe='Mago',
-                    usuario_id=mestre.id
-                )
-                db.session.add(cavaleiro_mestre)
-                db.session.commit()
-            
-            print("✅ Tabelas verificadas com sucesso!")
-        except Exception as e:
-            print(f"❌ Erro ao criar tabelas: {e}")
+        db.create_all()
+        if not Usuario.query.filter_by(is_master=True).first():
+            mestre = Usuario(
+                username='mestre',
+                password_hash=generate_password_hash('mestre123'),
+                is_master=True
+            )
+            db.session.add(mestre)
+            cavaleiro_mestre = Cavaleiro(
+                nome='Mestre da Guilda',
+                classe='Mago',
+                usuario_id=mestre.id
+            )
+            db.session.add(cavaleiro_mestre)
+            db.session.commit()
 
 criar_tabelas()
 
-# Agendador de Tarefas
 def resetar_quests():
     with app.app_context():
-        try:
-            agora = datetime.utcnow()
-            
-            # Resetar quests diárias
+        agora = datetime.utcnow()
+        Quest.query.filter(
+            Quest.diaria == True,
+            Quest.desativada_ate <= agora
+        ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
+        
+        if agora.weekday() == 6:
             Quest.query.filter(
-                Quest.diaria == True,
+                Quest.semanal == True,
                 Quest.desativada_ate <= agora
-            ).update({
-                'concluida': False,
-                'desativada_ate': None,
-                'concluida_por': None
-            }, synchronize_session=False)
-            
-            # Resetar quests semanais (aos domingos)
-            if agora.weekday() == 6:
-                Quest.query.filter(
-                    Quest.semanal == True,
-                    Quest.desativada_ate <= agora
-                ).update({
-                    'concluida': False,
-                    'desativada_ate': None,
-                    'concluida_por': None
-                }, synchronize_session=False)
-            
-            db.session.commit()
-            print("♻️ Quests resetadas com sucesso")
-        except Exception as e:
-            print(f"❌ Erro ao resetar quests: {e}")
-            db.session.rollback()
+            ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
+        
+        db.session.commit()
 
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = BackgroundScheduler()
     scheduler.add_job(resetar_quests, 'interval', hours=1)
     scheduler.start()
 
-# Funções de ajuda
 def usuario_logado():
-    if 'user_id' in session:
-        return Usuario.query.get(session['user_id'])
-    return None
+    return Usuario.query.get(session.get('user_id'))
 
 def is_master():
     user = usuario_logado()
     return user and user.is_master
 
-# Rotas de Autenticação
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = Usuario.query.filter_by(username=username).first()
-        
-        if user and check_password_hash(user.password_hash, password):
+        user = Usuario.query.filter_by(username=request.form['username']).first()
+        if user and check_password_hash(user.password_hash, request.form['password']):
             session['user_id'] = user.id
-            session['username'] = user.username
             session['is_master'] = user.is_master
-            
-            # Verifica se tem cavaleiro vinculado
-            cavaleiro = Cavaleiro.query.filter_by(usuario_id=user.id).first()
-            if cavaleiro:
-                session['cavaleiro_id'] = cavaleiro.id
-                session['cavaleiro_nome'] = cavaleiro.nome
-            
-            flash('Login realizado com sucesso!', 'success')
-            next_page = request.args.get('next') or url_for('tabuleiro')
-            return redirect(next_page)
-        else:
-            flash('Usuário ou senha incorretos', 'error')
-    
+            if user.cavaleiro:
+                session['cavaleiro_id'] = user.cavaleiro.id
+            flash('Login realizado!', 'success')
+            return redirect(url_for('tabuleiro'))
+        flash('Credenciais inválidas', 'error')
     return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()  # Limpa toda a sessão
-    flash('Você foi deslogado', 'info')
-    return redirect(url_for('login'))
 
 @app.route('/registrar', methods=['GET', 'POST'])
 def registrar():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        if Usuario.query.filter_by(username=username).first():
-            flash('Username já existe', 'error')
+        if Usuario.query.filter_by(username=request.form['username']).first():
+            flash('Usuário já existe', 'error')
             return redirect(url_for('registrar'))
-
+        
         novo_usuario = Usuario(
-            username=username,
-            password_hash=generate_password_hash(password),
+            username=request.form['username'],
+            password_hash=generate_password_hash(request.form['password']),
             is_master=False
         )
-        
         db.session.add(novo_usuario)
         db.session.commit()
-        flash('Registro realizado! Agora faça login', 'success')
+        flash('Conta criada! Faça login', 'success')
         return redirect(url_for('login'))
-    
     return render_template('registrar.html')
 
-# Adicione esta verificação antes das rotas que exigem login
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.before_request
 def requer_login():
-    rotas_permitidas = ['login', 'registrar', 'static', 'tabuleiro']
-    if request.endpoint not in rotas_permitidas and 'user_id' not in session:
+    if not request.endpoint in ['login', 'registrar', 'static', 'tabuleiro'] and 'user_id' not in session:
         return redirect(url_for('login'))
 
-# Rotas Principais
 @app.route('/')
 def tabuleiro():
-    try:
-        conquistas = Conquista.query.order_by(Conquista.data.desc()).limit(5).all()
-        cavaleiros = Cavaleiro.query.all()
-        quests_globais = Quest.query.filter_by(global_quest=True).all()
-        
-        return render_template('tabuleiro.html',
-                            cavaleiros=cavaleiros,
-                            classes=CLASSES,
-                            conquistas=conquistas,
-                            categorias=CATEGORIAS,
-                            quests_globais=quests_globais,
-                            is_master=is_master(),
-                            usuario_logado=usuario_logado())
-    except Exception as e:
-        flash('Erro ao carregar dados do banco', 'error')
-        return render_template('tabuleiro.html',
-                            cavaleiros=[],
-                            classes=CLASSES,
-                            conquistas=[],
-                            categorias=CATEGORIAS,
-                            quests_globais=[],
-                            is_master=False,
-                            usuario_logado=None)
+    conquistas = Conquista.query.order_by(Conquista.data.desc()).limit(5).all()
+    cavaleiros = Cavaleiro.query.all()
+    quests_globais = Quest.query.filter_by(global_quest=True).all()
+    return render_template('tabuleiro.html',
+                        cavaleiros=cavaleiros,
+                        classes=CLASSES,
+                        conquistas=conquistas,
+                        categorias=CATEGORIAS,
+                        quests_globais=quests_globais,
+                        is_master=is_master(),
+                        usuario_logado=usuario_logado())
 
 @app.route('/cavaleiro/<int:cavaleiro_id>')
 def perfil_cavaleiro(cavaleiro_id):
-    try:
-        cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)
-        quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id, global_quest=False).order_by(Quest.categoria).all()
-        conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).order_by(Conquista.data.desc()).all()
-        
-        return render_template('perfil_cavaleiro.html',
-                            cavaleiro=cavaleiro,
-                            classes=CLASSES,
-                            quests=quests,
-                            conquistas=conquistas,
-                            categorias=CATEGORIAS,
-                            is_master=is_master(),
-                            usuario_logado=usuario_logado())
-    except Exception as e:
-        flash('Erro ao carregar perfil', 'error')
-        return redirect(url_for('tabuleiro'))
+    cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)
+    quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id, global_quest=False).all()
+    conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).all()
+    return render_template('perfil_cavaleiro.html',
+                        cavaleiro=cavaleiro,
+                        classes=CLASSES,
+                        quests=quests,
+                        conquistas=conquistas,
+                        categorias=CATEGORIAS,
+                        is_master=is_master(),
+                        usuario_logado=usuario_logado())
 
 @app.route('/adicionar_cavaleiro', methods=['POST'])
 def adicionar_cavaleiro():
-    if not usuario_logado():
-        flash('Você precisa estar logado para esta ação', 'error')
-        return redirect(url_for('login'))
-    
-    try:
-        novo_cavaleiro = Cavaleiro(
-            nome=request.form['nome'],
-            classe=request.form['classe'],
-            usuario_id=usuario_logado().id
-        )
-        db.session.add(novo_cavaleiro)
-        db.session.commit()
-        flash('Cavaleiro adicionado com sucesso!', 'success')
-    except Exception as e:
-        flash(f'Erro ao adicionar cavaleiro: {str(e)}', 'error')
-        db.session.rollback()
+    novo_cavaleiro = Cavaleiro(
+        nome=request.form['nome'],
+        classe=request.form['classe'],
+        usuario_id=usuario_logado().id
+    )
+    db.session.add(novo_cavaleiro)
+    db.session.commit()
     return redirect(url_for('tabuleiro'))
 
 @app.route('/adicionar_quest', methods=['POST'])
 def adicionar_quest():
-    if not usuario_logado():
-        flash('Você precisa estar logado para esta ação', 'error')
-        return redirect(url_for('login'))
-    
-    try:
-        nova_quest = Quest(
-            titulo=request.form['titulo'],
-            descricao=request.form['descricao'],
-            diaria='diaria' in request.form,
-            semanal='semanal' in request.form,
-            global_quest='global_quest' in request.form and is_master(),
-            categoria=request.form['categoria'],
-            cavaleiro_id=request.form['cavaleiro_id']
-        )
-        db.session.add(nova_quest)
-        db.session.commit()
-        flash('Quest adicionada com sucesso!', 'success')
-    except Exception as e:
-        flash(f'Erro ao adicionar quest: {str(e)}', 'error')
-        db.session.rollback()
-    
-    if nova_quest.global_quest:
-        return redirect(url_for('tabuleiro'))
-    else:
-        return redirect(url_for('perfil_cavaleiro', cavaleiro_id=request.form['cavaleiro_id']))
+    nova_quest = Quest(
+        titulo=request.form['titulo'],
+        descricao=request.form['descricao'],
+        diaria='diaria' in request.form,
+        semanal='semanal' in request.form,
+        global_quest='global_quest' in request.form and is_master(),
+        categoria=request.form['categoria'],
+        cavaleiro_id=request.form['cavaleiro_id']
+    )
+    db.session.add(nova_quest)
+    db.session.commit()
+    return redirect(url_for('perfil_cavaleiro', cavaleiro_id=request.form['cavaleiro_id']))
 
 @app.route('/toggle_quest/<int:quest_id>')
 def toggle_quest(quest_id):
-    if not usuario_logado():
-        flash('Você precisa estar logado para esta ação', 'error')
-        return redirect(url_for('login'))
-    
-    try:
-        quest = Quest.query.get(quest_id)
-        user = usuario_logado()
-        
-        if not quest.concluida:
-            quest.concluida = True
-            quest.ultima_conclusao = datetime.utcnow()
-            quest.concluida_por = user.cavaleiro.nome if user.cavaleiro else user.username
-            
-            if quest.diaria or quest.semanal:
-                quest.desativada_ate = datetime.utcnow() + timedelta(days=1 if quest.diaria else 7)
-            
-            # Verificar se completou todas as quests diárias
-            if not quest.global_quest and quest.diaria:
-                cavaleiro = Cavaleiro.query.get(quest.cavaleiro_id)
-                quests_diarias = Quest.query.filter_by(cavaleiro_id=quest.cavaleiro_id, diaria=True).all()
-                
-                if all(q.concluida for q in quests_diarias):
-                    nova_conquista = Conquista(
-                        titulo="Dia Produtivo!",
-                        descricao=f"Completou todas as quests diárias em {datetime.utcnow().strftime('%d/%m/%Y')}",
-                        cavaleiro_id=quest.cavaleiro_id,
-                        autor_nome=user.cavaleiro.nome if user.cavaleiro else user.username
-                    )
-                    db.session.add(nova_conquista)
-        else:
-            if quest.desativada_ate is None or quest.desativada_ate <= datetime.utcnow():
-                quest.concluida = False
-                quest.ultima_conclusao = None
-                quest.concluida_por = None
-        
-        db.session.commit()
-        flash('Status da quest atualizado!', 'success')
-    except Exception as e:
-        flash(f'Erro ao atualizar quest: {str(e)}', 'error')
-        db.session.rollback()
-    
-    if quest.global_quest:
-        return redirect(url_for('tabuleiro'))
-    else:
-        return redirect(url_for('perfil_cavaleiro', cavaleiro_id=quest.cavaleiro_id))
-
-@app.route('/promover_mestre/<int:usuario_id>')
-def promover_mestre(usuario_id):
-    if not is_master():
-        flash('Apenas o Mestre da Guilda pode promover outros', 'error')
-        return redirect(url_for('tabuleiro'))
-    
-    try:
-        usuario = Usuario.query.get(usuario_id)
-        usuario.is_master = True
-        db.session.commit()
-        flash(f'{usuario.username} foi promovido a Mestre!', 'success')
-    except Exception as e:
-        flash(f'Erro ao promover mestre: {str(e)}', 'error')
-        db.session.rollback()
-    
-    return redirect(url_for('tabuleiro'))
+    quest = Quest.query.get(quest_id)
+    quest.concluida = not quest.concluida
+    quest.ultima_conclusao = datetime.utcnow() if quest.concluida else None
+    quest.concluida_por = usuario_logado().username if quest.concluida else None
+    db.session.commit()
+    return redirect(request.referrer)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    with app.app_context():
-        criar_tabelas()
     app.run(host='0.0.0.0', port=port)

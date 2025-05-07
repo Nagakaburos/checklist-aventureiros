@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>📜 Registrar na Taverna</title>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <title>🏰 Taverna dos Aventureiros - Registrar</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet>
     <style>
+        /* Mesmos estilos do login.html */
         :root {
             --pergaminho: rgba(240, 234, 214, 0.9);
             --tinta: #3D2B1F;
@@ -16,55 +17,54 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
         }
         .register-container {
-            background-color: var(--pergaminho);
-            border: 3px solid var(--tinta);
+            background: var(--pergaminho);
+            padding: 2rem;
             border-radius: 15px;
-            padding: 30px;
-            width: 100%;
+            border: 3px solid var(--tinta);
+            width: 90%;
             max-width: 400px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
         }
         h1 {
             text-align: center;
             color: var(--tinta);
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
         input, button {
-            font-family: 'MedievalSharp', cursive;
-            margin: 10px 0;
-            padding: 12px;
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
             border: 2px solid var(--tinta);
             border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box;
+            font-family: 'MedievalSharp', cursive;
         }
         button {
-            background-color: #8B0000;
+            background: #8B0000;
             color: white;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 16px;
+            transition: 0.3s;
         }
         button:hover {
-            background-color: #A52A2A;
+            background: #A52A2A;
         }
         .flash-message {
-            padding: 10px;
-            margin: 10px 0;
+            padding: 0.5rem;
+            margin: 1rem 0;
             border-radius: 5px;
             text-align: center;
         }
-        .error {
-            background-color: rgba(255, 0, 0, 0.3);
-            color: darkred;
-        }
-        .login-link {
+        .error { background: rgba(255,0,0,0.3); color: darkred; }
+        .links {
+            margin-top: 1rem;
             text-align: center;
-            margin-top: 15px;
         }
+        a {
+            color: var(--tinta);
+            text-decoration: none;
+        }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -78,15 +78,16 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         <form method="POST" action="{{ url_for('registrar') }}">
             <input type="text" name="username" placeholder="Nome de Usuário" required>
             <input type="password" name="password" placeholder="Senha" required>
             <button type="submit">Registrar</button>
         </form>
-        
-        <div class="login-link">
-            <p>Já tem conta? <a href="{{ url_for('login') }}">Faça login aqui</a></p>
+
+        <div class="links">
+            <p>Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+            <p><a href="{{ url_for('tabuleiro') }}">Voltar para a Taverna</a></p>
         </div>
     </div>
 </body>

@@ -7,74 +7,31 @@
         :root {
             --cor-primaria: {{ classes[cavaleiro.classe].cor_primaria }};
             --cor-secundaria: {{ classes[cavaleiro.classe].cor_secundaria }};
-            --pergaminho: rgba(240, 234, 214, 0.7);
+            --pergaminho: rgba(240, 234, 214, 0.8);
         }
         body {
             font-family: 'MedievalSharp', cursive;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
             padding: 20px;
-            {% if cavaleiro.classe == 'Necromante' %}
-                background-color: #000000;
-                color: #00FF00;
-            {% else %}
-                background-image: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
-                color: #3D2B1F;
-            {% endif %}
         }
         .container {
-            width: 90%;
             max-width: 1200px;
             margin: 0 auto;
         }
         .header-heroi {
-            background-color: var(--cor-primaria);
+            background: var(--cor-primaria);
             color: var(--cor-secundaria);
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
             text-align: center;
             margin-bottom: 20px;
         }
         .quest-card {
+            background: var(--pergaminho);
             border: 2px solid var(--cor-primaria);
-            background-color: var(--pergaminho);
-            margin: 10px 0;
             padding: 15px;
+            margin: 10px 0;
             border-radius: 8px;
-        }
-        .formulario {
-            border: 3px solid var(--cor-primaria);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            background-color: var(--pergaminho);
-        }
-        input, textarea, select, button {
-            font-family: 'MedievalSharp', cursive;
-            margin: 8px 0;
-            padding: 10px;
-            border: 2px solid var(--cor-primaria);
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.8);
-            width: 100%;
-        }
-        button {
-            background-color: var(--cor-primaria);
-            color: var(--cor-secundaria);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
-        .categoria-titulo {
-            color: var(--cor-primaria);
-            border-bottom: 2px solid var(--cor-primaria);
-            padding-bottom: 5px;
-            margin-top: 20px;
         }
         .concluida {
             opacity: 0.6;
@@ -87,117 +44,79 @@
             );
         }
         .voltar-btn {
-            background-color: var(--cor-secundaria);
+            background: var(--cor-secundaria);
             color: var(--cor-primaria);
-            margin-bottom: 20px;
-            display: inline-block;
             padding: 10px 15px;
-            text-decoration: none;
             border-radius: 5px;
-        }
-        .user-controls {
-            display: flex;
-            justify-content: space-between;
+            text-decoration: none;
+            display: inline-block;
             margin-bottom: 20px;
-            width: 100%;
         }
         .user-info {
-            background-color: var(--pergaminho);
+            background: var(--pergaminho);
             padding: 10px;
             border-radius: 5px;
-            border: 1px solid var(--cor-primaria);
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            float: right;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="user-controls">
-            <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
-            {% if usuario_logado %}
-                <div class="user-info">
-                    🧙‍♂️ {{ usuario_logado.username }}
-                    {% if is_master %}(Mestre){% endif %}
-                    <a href="{{ url_for('logout') }}" style="margin-left: 10px;">Sair</a>
-                </div>
-            {% endif %}
+        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar</a>
+        <div class="user-info">
+            🧙 {{ usuario_logado.username if usuario_logado else 'Visitante' }}
+            {% if is_master %}(Mestre){% endif %}
+            {% if usuario_logado %}<a href="{{ url_for('logout') }}">Sair</a>{% endif %}
         </div>
-        
+
         <div class="header-heroi">
             <h1>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h1>
             <h2>{{ cavaleiro.classe }}</h2>
         </div>
 
-        {% if (usuario_logado and usuario_logado.cavaleiro and usuario_logado.cavaleiro.id == cavaleiro.id) or is_master %}
-        <div class="formulario">
+        {% if usuario_logado and (usuario_logado.cavaleiro.id == cavaleiro.id or is_master) %}
+        <div class="quest-card">
             <form method="POST" action="/adicionar_quest">
                 <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
                 <input type="text" name="titulo" placeholder="Nova Quest" required>
-                <textarea name="descricao" placeholder="Detalhes"></textarea>
-                
+                <textarea name="descricao" placeholder="Descrição"></textarea>
                 <div>
                     <label><input type="checkbox" name="diaria"> Diária</label>
                     <label><input type="checkbox" name="semanal"> Semanal</label>
-                    {% if is_master %}
-                        <label><input type="checkbox" name="global_quest"> Quest Global</label>
-                    {% endif %}
+                    {% if is_master %}<label><input type="checkbox" name="global_quest"> Global</label>{% endif %}
                 </div>
-                
                 <select name="categoria" required>
                     {% for valor, nome in categorias %}
                         <option value="{{ valor }}">{{ nome }}</option>
                     {% endfor %}
                 </select>
-                
                 <button type="submit">Adicionar Quest</button>
             </form>
         </div>
         {% endif %}
 
-        <div class="grid-container">
-            {% for categoria in categorias %}
-                {% set quests_categoria = quests|selectattr('categoria', 'equalto', categoria.0)|list %}
-                {% if quests_categoria %}
-                    <h3 class="categoria-titulo">{{ categoria.1 }}</h3>
-                    
-                    {% for quest in quests_categoria %}
-                        <div class="quest-card {{ 'concluida' if quest.concluida }}">
-                            <h3><a href="/toggle_quest/{{ quest.id }}" style="text-decoration: none;">
-                                {% if quest.concluida %}✔️{% else %}⚔️{% endif %}
-                                {{ quest.titulo }}
-                            </a></h3>
-                            <p>{{ quest.descricao }}</p>
-                            {% if quest.concluida_por %}
-                                <small>Concluída por: {{ quest.concluida_por }}</small>
-                            {% endif %}
-                            <small>
-                                {{ 'Diária ⏳' if quest.diaria }}{{ 'Semanal 📅' if quest.semanal }}
-                                | Criada em: {{ quest.data_criacao.strftime('%d/%m') }}
-                                {% if quest.concluida and quest.desativada_ate %}
-                                    | Disponível em: {{ (quest.desativada_ate - datetime.utcnow()).seconds // 3600 }}h
-                                    {{ ((quest.desativada_ate - datetime.utcnow()).seconds % 3600) // 60 }}m
-                                {% endif %}
-                            </small>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-        </div>
-
-        <h2 class="categoria-titulo">🏆 Conquistas</h2>
-        <div class="grid-container">
-            {% for conquista in conquistas %}
-                <div class="quest-card">
-                    <h3>🏅 {{ conquista.titulo }}</h3>
-                    <p>{{ conquista.descricao }}</p>
-                    <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+        {% for categoria in categorias %}
+            <h3>{{ categoria.1 }}</h3>
+            {% for quest in quests|selectattr('categoria', 'equalto', categoria.0) %}
+                <div class="quest-card {{ 'concluida' if quest.concluida }}">
+                    <a href="/toggle_quest/{{ quest.id }}">
+                        {% if quest.concluida %}✔️{% else %}⚔️{% endif %}
+                        {{ quest.titulo }}
+                    </a>
+                    <p>{{ quest.descricao }}</p>
+                    {% if quest.concluida_por %}<small>Concluída por: {{ quest.concluida_por }}</small>{% endif %}
                 </div>
             {% endfor %}
-        </div>
+        {% endfor %}
+
+        <h2>🏆 Conquistas</h2>
+        {% for conquista in conquistas %}
+            <div class="quest-card">
+                <h3>{{ conquista.titulo }}</h3>
+                <p>{{ conquista.descricao }}</p>
+                <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+            </div>
+        {% endfor %}
     </div>
 </body>
 </html>
