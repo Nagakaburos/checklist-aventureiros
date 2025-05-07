@@ -1,65 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>🏰 Login na Taverna</title>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Taverna dos Aventureiros</title>
     <style>
-        /* Estilos similares ao tabuleiro com foco no formulário */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+        }
         .login-container {
-            background: var(--pergaminho);
-            border: 3px solid var(--sangue-dragao);
-            border-radius: 15px;
-            padding: 2rem;
-            max-width: 400px;
-            margin: 2rem auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        }
-        
-        .input-medieval {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            padding: 0.8rem;
-            margin: 0.5rem 0;
-            border: 2px solid var(--tinta);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.8);
+            max-width: 400px;
         }
-        
-        .decoracao-taverna {
+        h1 {
+            color: #8B4513;
             text-align: center;
-            font-size: 4rem;
-            margin: 1rem 0;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #A0522D;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .register-link a {
+            color: #8B4513;
+            text-decoration: none;
+        }
+        .error {
+            color: #d32f2f;
+            text-align: center;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="decoracao-taverna">⚔️🏰🔮</div>
+    <div class="login-container">
+        <h1>Taverna dos Aventureiros</h1>
         
-        <div class="login-container">
-            <h2>Acessar a Taverna</h2>
-            
-            <!-- Formulário mantido com classes estilizadas -->
-            <form method="POST" action="{{ url_for('login') }}">
-                <input type="text" name="username" 
-                       class="input-medieval"
-                       placeholder="Nome de aventureiro" required>
-                
-                <input type="password" name="password"
-                       class="input-medieval" 
-                       placeholder="Senha secreta" required>
-                
-                <button type="submit" 
-                        class="btn-medieval btn-grande">
-                    🗝️ Entrar na Taverna
-                </button>
-            </form>
-            
-            <div class="links-uteis">
-                <a href="{{ url_for('registrar') }}" 
-                   class="btn-medieval btn-pequeno">
-                    📜 Criar Nova Conta
-                </a>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label for="username">Nome de Usuário</label>
+                <input type="text" id="username" name="username" required>
             </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Entrar</button>
+        </form>
+
+        <div class="register-link">
+            Não tem uma conta? <a href="{{ url_for('registrar') }}">Registre-se</a>
         </div>
     </div>
 </body>

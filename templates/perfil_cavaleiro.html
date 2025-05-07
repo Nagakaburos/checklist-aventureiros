@@ -1,313 +1,247 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>{{ cavaleiro.nome }} - Perfil</title>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cavaleiro.nome }} - Taverna dos Aventureiros</title>
     <style>
-        :root {
-            --cor-primaria: {{ classes[cavaleiro.classe].cor_primaria }};
-            --cor-secundaria: {{ classes[cavaleiro.classe].cor_secundaria }};
-            --pergaminho: rgba(240, 234, 214, 0.9);
-            --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
         body {
-            font-family: 'MedievalSharp', cursive;
-            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 20px;
-            color: #3D2B1F;
+            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-attachment: fixed;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            position: relative;
-        }
-
-        .voltar-btn {
-            background: var(--cor-secundaria);
-            color: var(--cor-primaria);
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-block;
-            margin-bottom: 20px;
-            border: 2px solid var(--cor-primaria);
-            transition: all 0.3s;
-        }
-
-        .voltar-btn:hover {
-            background: var(--cor-primaria);
-            color: var(--cor-secundaria);
-        }
-
-        .user-info {
-            background: var(--pergaminho);
-            padding: 10px 20px;
-            border-radius: 8px;
-            float: right;
-            border: 2px solid var(--cor-primaria);
-            box-shadow: var(--sombra);
-        }
-
-        .header-heroi {
-            background: var(--cor-primaria);
-            color: var(--cor-secundaria);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 2rem;
-            box-shadow: var(--sombra);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nivel-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-
-        .nivel-grande {
-            font-size: 3em;
-            line-height: 1;
-            margin: 0;
-            color: var(--cor-secundaria);
-        }
-
-        .rotulo-nivel {
-            font-size: 1.2em;
-            opacity: 0.8;
-            color: var(--cor-secundaria);
-        }
-
-        .experiencia-container {
-            width: 100%;
-            max-width: 300px;
-            margin: 1rem auto;
-        }
-
-        .barra-experiencia {
-            width: 100%;
-            height: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progresso-experiencia {
-            height: 100%;
-            background: var(--cor-secundaria);
-            width: {{ progresso }}%;
-            transition: width 0.5s;
-        }
-
-        .info-experiencia {
+        .header {
             display: flex;
             justify-content: space-between;
-            margin-top: 5px;
-            font-size: 0.9em;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
         }
-
-        .quest-card {
-            background: var(--pergaminho);
-            border: 2px solid var(--cor-primaria);
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            box-shadow: var(--sombra);
+        h1 {
+            color: #8B4513;
+            margin: 0;
         }
-
-        .concluida {
-            opacity: 0.7;
-            background: repeating-linear-gradient(
-                -45deg,
-                rgba(0,0,0,0.05),
-                rgba(0,0,0,0.05) 10px,
-                transparent 10px,
-                transparent 20px
-            );
+        .knight-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
-
-        .mestre-quest {
-            border-left: 5px solid var(--cor-secundaria);
-            background: rgba(255, 215, 0, 0.1);
-        }
-
-        .badge-mestre {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--cor-secundaria);
-            color: var(--cor-primaria);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-        }
-
-        .formulario-quest {
-            background: var(--pergaminho);
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            border: 3px solid var(--cor-primaria);
-            box-shadow: var(--sombra);
-        }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-medieval {
-            background: var(--cor-primaria);
-            color: var(--cor-secundaria);
-            padding: 0.8rem 1.5rem;
-            border: none;
+        .knight-stats {
+            background-color: #f9f9f9;
+            padding: 15px;
             border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #8B4513;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #A0522D;
+        }
+        .quest-list, .achievement-list {
+            margin-top: 30px;
+        }
+        .quest-item, .achievement-item {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .quest-item.completed {
+            background-color: #e8f5e9;
+        }
+        .quest-checkbox {
+            margin-right: 10px;
+        }
+        .add-form {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 15px;
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            font-family: 'MedievalSharp', cursive;
-            transition: all 0.3s;
+            transition: background-color 0.3s;
         }
-
-        .btn-medieval:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 8px rgba(0, 0, 0, 0.2);
+        .btn:hover {
+            background-color: #A0522D;
         }
-
-        .conquista-card {
-            background: var(--pergaminho);
-            border: 2px solid var(--cor-primaria);
+        .progress-container {
+            margin-top: 10px;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
             border-radius: 10px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            position: relative;
+            overflow: hidden;
         }
-
-        .global-conquista {
-            border-color: var(--cor-secundaria);
-            background: rgba(255, 215, 0, 0.1);
+        .progress {
+            height: 100%;
+            background-color: #8B4513;
+            width: {{ (cavaleiro.experiencia / (cavaleiro.nivel * 100)) * 100 }}%;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{{ url_for('tabuleiro') }}" class="voltar-btn">← Voltar para a Taverna</a>
-        
-        <div class="user-info">
-            🧙 {{ usuario_logado.username if usuario_logado else 'Visitante' }}
-            {% if is_master %}(Mestre){% endif %}
-            {% if usuario_logado %}<a href="{{ url_for('logout') }}" style="margin-left:15px;">🚪 Sair</a>{% endif %}
+        <div class="header">
+            <div class="knight-info">
+                <h1>{{ cavaleiro.nome }}</h1>
+                <span>Nível {{ cavaleiro.nivel }} - {{ cavaleiro.classe }}</span>
+            </div>
+            <a href="{{ url_for('tabuleiro') }}" class="back-link">Voltar</a>
         </div>
 
-        <div class="header-heroi">
-            <div class="nivel-container">
-                <div class="nivel-grande">{{ cavaleiro.nivel }}</div>
-                <div class="rotulo-nivel">NÍVEL</div>
-            </div>
-            <h1>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h1>
-            <h2>{{ cavaleiro.classe }}</h2>
-            
-            <div class="experiencia-container">
-                <div class="barra-experiencia">
-                    <div class="progresso-experiencia"></div>
-                </div>
-                <div class="info-experiencia">
-                    <span>Experiência: {{ cavaleiro.experiencia }}/{{ cavaleiro.nivel * 100 }}</span>
-                    <span>Próximo nível: {{ (cavaleiro.nivel * 100) - cavaleiro.experiencia }}</span>
+        <div class="knight-stats">
+            <h3>Progresso</h3>
+            <p>Experiência: {{ cavaleiro.experiencia }} / {{ cavaleiro.nivel * 100 }}</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress"></div>
                 </div>
             </div>
         </div>
 
-        {% if usuario_logado and (usuario_logado.cavaleiro.id == cavaleiro.id or is_master) %}
-        <div class="formulario-quest">
-            <h3>📜 Nova Missão</h3>
-            <form method="POST" action="/adicionar_quest">
-                <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
-                
-                <div class="input-group">
-                    <input type="text" name="titulo" class="input-medieval" placeholder="Nome da Missão" required>
-                </div>
-                
-                <div class="input-group">
-                    <textarea name="descricao" class="input-medieval" rows="3" placeholder="Descrição"></textarea>
-                </div>
-                
-                <div class="input-group">
-                    <select name="categoria" class="select-medieval" required>
-                        {% for valor, nome in categorias %}
-                            <option value="{{ valor }}">{{ nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label class="checkbox-medieval">
-                        <input type="checkbox" name="diaria">
-                        <span class="checkmark"></span>
-                        Missão Diária
-                    </label>
-                    
-                    <label class="checkbox-medieval">
-                        <input type="checkbox" name="semanal">
-                        <span class="checkmark"></span>
-                        Missão Semanal
-                    </label>
-                    
-                    {% if is_master %}
-                    <label class="checkbox-medieval">
-                        <input type="checkbox" name="mestre_quest">
-                        <span class="checkmark"></span>
-                        Missão do Mestre
-                    </label>
-                    {% endif %}
-                </div>
-                
-                <button type="submit" class="btn-medieval">🏹 Adicionar Missão</button>
-            </form>
-        </div>
-        {% endif %}
-
-        {% for categoria in categorias %}
-            <h3>{{ categoria.1 }}</h3>
-            {% for quest in quests|selectattr('categoria', 'equalto', categoria.0) %}
-                <div class="quest-card {{ 'mestre-quest' if quest.mestre_quest }} {{ 'concluida' if quest.concluida }}">
-                    {% if quest.mestre_quest %}<div class="badge-mestre">Missão do Mestre</div>{% endif %}
-                    <h3>
-                        {% if quest.concluida %}✅{% else %}⚔️{% endif %}
-                        {{ quest.titulo }}
-                    </h3>
+        <div class="quest-list">
+            <h2>Missões</h2>
+            {% for quest in quests %}
+                <div class="quest-item {% if quest.concluida %}completed{% endif %}">
+                    <input type="checkbox" class="quest-checkbox" 
+                           {% if quest.concluida %}checked{% endif %}
+                           onclick="window.location.href='{{ url_for('toggle_quest', quest_id=quest.id) }}'">
+                    <strong>{{ quest.titulo }}</strong> - {{ quest.categoria }}
                     <p>{{ quest.descricao }}</p>
-                    {% if quest.concluida_por %}
-                        <small>Concluída por: {{ quest.concluida_por }}</small>
-                    {% endif %}
-                    <div style="margin-top:10px;">
-                        <small>Experiência: +{{ quest.experiencia_recompensa }}</small>
-                    </div>
+                    <small>XP: {{ quest.experiencia_recompensa }}</small>
                 </div>
             {% endfor %}
-        {% endfor %}
 
-        <h2>🏆 Conquistas</h2>
-        {% for conquista in conquistas %}
-            <div class="conquista-card {{ 'global-conquista' if conquista.global_conquista }}">
-                <h3>{{ conquista.titulo }}</h3>
-                <p>{{ conquista.descricao }}</p>
-                <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
-                {% if conquista.global_conquista %}
-                    <div class="badge-mestre">Global</div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="conquista-card">
-                <h3>Nenhuma conquista ainda...</h3>
-                <p>Complete missões para ganhar conquistas!</p>
-            </div>
-        {% endfor %}
+            {% if 'user_id' in session and (session['user_id'] == cavaleiro.usuario.id or is_master) %}
+                <div class="add-form">
+                    <h3>Adicionar Missão</h3>
+                    <form action="{{ url_for('adicionar_quest') }}" method="POST">
+                        <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
+                        <div class="form-group">
+                            <label for="titulo">Título</label>
+                            <input type="text" id="titulo" name="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <textarea id="descricao" name="descricao"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoria">Categoria</label>
+                            <select id="categoria" name="categoria" required>
+                                <option value="manha">🌄 Manhã</option>
+                                <option value="dia">🏰 Durante o Dia</option>
+                                <option value="instagram_stories">📜 Instagram/Stories</option>
+                                <option value="instagram_feed">📜 Instagram/Feed</option>
+                                <option value="instagram_perguntas">📜 Instagram/Perguntas</option>
+                                <option value="whatsapp_status">📯 WhatsApp/Status</option>
+                                <option value="whatsapp_transmissao">📯 WhatsApp/Transmissão</option>
+                                <option value="vendas">💰 Vendas</option>
+                                <option value="pos_venda">📦 Pós-Venda</option>
+                                <option value="parcerias">🤝 Parcerias</option>
+                                <option value="expediente">🌙 Fim de Expediente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="experiencia_recompensa">Experiência</label>
+                            <input type="number" id="experiencia_recompensa" name="experiencia_recompensa" value="10" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="diaria"> Diária
+                            </label>
+                            <label>
+                                <input type="checkbox" name="semanal"> Semanal
+                            </label>
+                            {% if is_master %}
+                                <label>
+                                    <input type="checkbox" name="global_quest"> Global
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="mestre_quest"> Missão do Mestre
+                                </label>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn">Adicionar Missão</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="achievement-list">
+            <h2>Conquistas</h2>
+            {% for conquista in conquistas %}
+                <div class="achievement-item">
+                    <h3>{{ conquista.titulo }}</h3>
+                    <p>{{ conquista.descricao }}</p>
+                    <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
+                </div>
+            {% endfor %}
+
+            {% if is_master %}
+                <div class="add-form">
+                    <h3>Adicionar Conquista</h3>
+                    <form action="{{ url_for('adicionar_conquista') }}" method="POST">
+                        <input type="hidden" name="cavaleiro_id" value="{{ cavaleiro.id }}">
+                        <div class="form-group">
+                            <label for="titulo">Título</label>
+                            <input type="text" id="titulo" name="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <textarea id="descricao" name="descricao"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="global_conquista"> Conquista Global
+                            </label>
+                        </div>
+                        <button type="submit" class="btn">Adicionar Conquista</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>

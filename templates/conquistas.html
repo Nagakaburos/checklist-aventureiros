@@ -1,56 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <!-- Estilos atualizados -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conquistas - Taverna dos Aventureiros</title>
     <style>
-        .conquista-global {
-            border-left: 5px solid #FFD700;
-            background: rgba(255, 215, 0, 0.1);
-            position: relative;
-            overflow: hidden;
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-attachment: fixed;
         }
-
-        .conquista-global::after {
-            content: '★';
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            font-size: 2em;
-            color: #FFD700;
-            opacity: 0.3;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-
-        .badge-nivel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #8B4513;
+            margin: 0;
+        }
+        .back-link {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #8B4513;
             color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #A0522D;
+        }
+        .achievement-list {
+            margin-top: 30px;
+        }
+        .achievement-item {
+            padding: 20px;
+            margin: 15px 0;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #8B4513;
+        }
+        .achievement-item h3 {
+            margin-top: 0;
+            color: #8B4513;
+        }
+        .achievement-date {
+            color: #666;
             font-size: 0.9em;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏆 Conquistas Globais</h1>
-        
-        <div class="grid-conquistas">
-            {% for conquista in conquistas if conquista.global_conquista %}
-                <div class="conquista-global">
-                    <div class="cabecalho-conquista">
-                        <h3>{{ conquista.titulo }}</h3>
-                        <span class="autor">por {{ conquista.autor_nome }}</span>
-                    </div>
+        <div class="header">
+            <h1>Conquistas Globais</h1>
+            <a href="{{ url_for('tabuleiro') }}" class="back-link">Voltar</a>
+        </div>
+
+        <div class="achievement-list">
+            {% for conquista in conquistas %}
+                <div class="achievement-item">
+                    <h3>{{ conquista.titulo }}</h3>
                     <p>{{ conquista.descricao }}</p>
-                    <div class="info-conquista">
-                        <span class="data">{{ conquista.data.strftime('%d/%m/%Y') }}</span>
-                        <span class="classe" style="color: {{ classes[conquista.cavaleiro.classe].cor_primaria }};">
-                            {{ classes[conquista.cavaleiro.classe].icone }} {{ conquista.cavaleiro.nome }}
-                        </span>
+                    <div class="achievement-date">
+                        {{ conquista.data.strftime('%d/%m/%Y') }} - 
+                        {% if conquista.cavaleiro %}
+                            {{ conquista.cavaleiro.nome }}
+                        {% else %}
+                            Sistema
+                        {% endif %}
                     </div>
                 </div>
+            {% else %}
+                <p>Nenhuma conquista global ainda.</p>
             {% endfor %}
         </div>
     </div>
