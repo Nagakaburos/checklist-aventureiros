@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>📜 Taverna dos Aventureiros - Login</title>
+    <title>📜 Registrar na Taverna</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,7 +18,7 @@
             margin: 0;
             padding: 20px;
         }
-        .login-container {
+        .register-container {
             background-color: var(--pergaminho);
             border: 3px solid var(--tinta);
             border-radius: 15px;
@@ -57,23 +57,19 @@
             border-radius: 5px;
             text-align: center;
         }
-        .success {
-            background-color: rgba(0, 128, 0, 0.3);
-            color: darkgreen;
-        }
         .error {
             background-color: rgba(255, 0, 0, 0.3);
             color: darkred;
         }
-        .register-link {
+        .login-link {
             text-align: center;
             margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>🏰 Taverna dos Aventureiros</h1>
+    <div class="register-container">
+        <h1>📜 Registrar Novo Aventureiro</h1>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -83,15 +79,14 @@
             {% endif %}
         {% endwith %}
         
-        <form method="POST" action="{{ url_for('login') }}">
+        <form method="POST" action="{{ url_for('registrar') }}">
             <input type="text" name="username" placeholder="Nome de Usuário" required>
             <input type="password" name="password" placeholder="Senha" required>
-            <button type="submit">Entrar na Taverna</button>
+            <button type="submit">Registrar</button>
         </form>
         
-        <div class="register-link">
-            <p>Novo aventureiro? <a href="{{ url_for('registrar') }}">Registre-se aqui</a></p>
-            <p><a href="{{ url_for('tabuleiro') }}">Continuar como visitante</a></p>
+        <div class="login-link">
+            <p>Já tem conta? <a href="{{ url_for('login') }}">Faça login aqui</a></p>
         </div>
     </div>
 </body>
