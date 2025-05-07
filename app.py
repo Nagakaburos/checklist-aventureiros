@@ -95,6 +95,18 @@ class Conquista(db.Model):
     autor_nome = db.Column(db.String(50), default='Aventureiro')
     global_conquista = db.Column(db.Boolean, default=False)
 
+def verificar_e_atualizar_banco():
+    with app.app_context():
+        inspector = db.inspect(db.engine)
+        if 'cavaleiro' in inspector.get_table_names():
+            if 'experiencia' not in [col['name'] for col in inspector.get_columns('cavaleiro')]:
+                db.engine.execute('ALTER TABLE cavaleiro ADD COLUMN experiencia INTEGER DEFAULT 0')
+                print("Coluna 'experiencia' adicionada à tabela cavaleiro")
+
+# Chame esta função quando o app iniciar
+verificar_e_atualizar_banco()
+
+
 # Helpers
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
