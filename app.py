@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,6 +24,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)  # Adicionando suporte a migrações
 
 CLASSES = {
     'Guerreiro': {'icone': '⚔️', 'cor_primaria': '#8B0000', 'cor_secundaria': '#C5B358'},
@@ -88,7 +90,7 @@ class Conquista(db.Model):
     data = db.Column(db.DateTime, default=datetime.utcnow)
     cavaleiro_id = db.Column(db.Integer, db.ForeignKey('cavaleiro.id'))
     autor_nome = db.Column(db.String(50), default='Aventureiro')
-    global_conquista = db.Column(db.Boolean, default=False)
+    global_conquista = db.Column(db.Boolean, default=False)  # Coluna corrigida
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -117,16 +119,27 @@ criar_tabelas()
 def resetar_quests():
     with app.app_context():
         agora = datetime.utcnow()
+        
+        # Resetar quests diárias
         Quest.query.filter(
             Quest.diaria == True,
             Quest.desativada_ate <= agora
-        ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
+        ).update({
+            'concluida': False,
+            'desativada_ate': None,
+            'concluida_por': None
+        })
         
+        # Resetar quests semanais (domingo)
         if agora.weekday() == 6:
             Quest.query.filter(
                 Quest.semanal == True,
                 Quest.desativada_ate <= agora
-            ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
+            ).update({
+                'concluida': False,
+                'desativada_ate': None,
+                'concluida_por': None
+            })
         
         db.session.commit()
 
@@ -184,13 +197,13 @@ def requer_login():
 
 @app.route('/')
 def tabuleiro():
-    conquistas = Conquista.query.filter_by(global_conquista=True).order_by(Conquista.data.desc()).limit(5).all()
+    conquistas_globais = Conquista.query.filter_by(global_conquista=True).order_by(Conquista.data.desc()).limit(5).all()
     cavaleiros = Cavaleiro.query.all()
     quests_globais = Quest.query.filter_by(global_quest=True).all()
     return render_template('tabuleiro.html',
                         cavaleiros=cavaleiros,
                         classes=CLASSES,
-                        conquistas=conquistas,
+                        conquistas=conquistas_globais,
                         categorias=CATEGORIAS,
                         quests_globais=quests_globais,
                         is_master=is_master(),
