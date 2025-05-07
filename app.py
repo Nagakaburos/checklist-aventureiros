@@ -162,14 +162,31 @@ def registrar():
             flash('Usuário já existe', 'error')
             return redirect(url_for('registrar'))
         
-        novo_usuario = Usuario(
-            username=request.form['username'],
-            password_hash=generate_password_hash(request.form['password']),
-            is_master=False
-        )
-        db.session.add(novo_usuario)
-        db.session.commit()
-        return redirect(url_for('login'))
+        try:
+            novo_usuario = Usuario(
+                username=request.form['username'],
+                password_hash=generate_password_hash(request.form['password']),
+                is_master=False
+            )
+            db.session.add(novo_usuario)
+            db.session.commit()
+            
+            # Cria cavaleiro automaticamente para o novo usuário
+            novo_cavaleiro = Cavaleiro(
+                nome=request.form['username'],
+                classe='Guerreiro',
+                usuario_id=novo_usuario.id
+            )
+            db.session.add(novo_cavaleiro)
+            db.session.commit()
+            
+            flash('Registro realizado! Bem-vindo à Taverna!', 'success')
+            return redirect(url_for('login'))
+        
+        except Exception as e:
+            flash(f'Erro no registro: {str(e)}', 'error')
+            db.session.rollback()
+    
     return render_template('registrar.html')
 
 @app.route('/logout')

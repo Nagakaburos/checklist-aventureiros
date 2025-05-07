@@ -1,70 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🏰 Taverna dos Aventureiros - Registrar</title>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet>
+    <title>🏰 Registrar Novo Aventureiro</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
-        /* Mesmos estilos do login.html */
         :root {
             --pergaminho: rgba(240, 234, 214, 0.9);
             --tinta: #3D2B1F;
+            --sangue-dragao: #8B0000;
         }
+
         body {
-            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
             font-family: 'MedievalSharp', cursive;
+            background: url('https://img.freepik.com/fotos-premium/textura-de-papel-antigo-vintage_47840-948.jpg');
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
         }
+
         .register-container {
             background: var(--pergaminho);
             padding: 2rem;
             border-radius: 15px;
-            border: 3px solid var(--tinta);
+            border: 3px solid var(--sangue-dragao);
             width: 90%;
             max-width: 400px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
         }
+
         h1 {
             text-align: center;
             color: var(--tinta);
             margin-bottom: 2rem;
         }
-        input, button {
+
+        .input-medieval {
             width: 100%;
             padding: 0.8rem;
             margin: 0.5rem 0;
             border: 2px solid var(--tinta);
             border-radius: 8px;
             font-family: 'MedievalSharp', cursive;
+            background: rgba(255,255,255,0.8);
         }
-        button {
-            background: #8B0000;
+
+        .btn-medieval {
+            background: var(--sangue-dragao);
             color: white;
+            padding: 0.8rem 1.5rem;
+            border: 2px solid var(--tinta);
+            border-radius: 8px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s;
+            width: 100%;
+            font-size: 1.1em;
         }
-        button:hover {
-            background: #A52A2A;
+
+        .btn-medieval:hover {
+            background: var(--tinta);
         }
-        .flash-message {
-            padding: 0.5rem;
-            margin: 1rem 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .error { background: rgba(255,0,0,0.3); color: darkred; }
+
         .links {
             margin-top: 1rem;
             text-align: center;
         }
+
         a {
-            color: var(--tinta);
+            color: var(--sangue-dragao);
             text-decoration: none;
+            font-weight: bold;
         }
-        a:hover { text-decoration: underline; }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .flash-message {
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #8B0000;
+            color: #8B0000;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #006400;
+            color: #006400;
+        }
     </style>
 </head>
 <body>
@@ -80,14 +111,14 @@
         {% endwith %}
 
         <form method="POST" action="{{ url_for('registrar') }}">
-            <input type="text" name="username" placeholder="Nome de Usuário" required>
-            <input type="password" name="password" placeholder="Senha" required>
-            <button type="submit">Registrar</button>
+            <input class="input-medieval" type="text" name="username" placeholder="Nome de Usuário" required>
+            <input class="input-medieval" type="password" name="password" placeholder="Senha" required>
+            <button type="submit" class="btn-medieval">🖋️ Registrar</button>
         </form>
 
         <div class="links">
-            <p>Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
-            <p><a href="{{ url_for('tabuleiro') }}">Voltar para a Taverna</a></p>
+            <p>Já tem conta? <a href="{{ url_for('login') }}">Faça login aqui</a></p>
+            <p><a href="{{ url_for('tabuleiro') }}">↩ Voltar para a Taverna</a></p>
         </div>
     </div>
 </body>
