@@ -1,27 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🏆 Conquistas da Guilda</title>
-    <!-- Estilos consistentes com outras páginas -->
+    <!-- Estilos atualizados -->
+    <style>
+        .conquista-global {
+            border-left: 5px solid #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conquista-global::after {
+            content: '★';
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 2em;
+            color: #FFD700;
+            opacity: 0.3;
+        }
+
+        .badge-nivel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏆 Feitos Épicos</h1>
+        <h1>🏆 Conquistas Globais</h1>
         
         <div class="grid-conquistas">
-            {% for conquista in conquistas %}
-                <div class="conquista-card" 
-                     style="border-color: {{ classes[conquista.cavaleiro.classe].cor_primaria }}">
+            {% for conquista in conquistas if conquista.global_conquista %}
+                <div class="conquista-global">
                     <div class="cabecalho-conquista">
                         <h3>{{ conquista.titulo }}</h3>
-                        <span class="classe-cavaleiro">
-                            {{ classes[conquista.cavaleiro.classe].icone }}
-                            {{ conquista.cavaleiro.nome }}
-                        </span>
+                        <span class="autor">por {{ conquista.autor_nome }}</span>
                     </div>
                     <p>{{ conquista.descricao }}</p>
-                    <div class="data-conquista">
-                        {{ conquista.data.strftime('%d/%m/%Y') }}
+                    <div class="info-conquista">
+                        <span class="data">{{ conquista.data.strftime('%d/%m/%Y') }}</span>
+                        <span class="classe" style="color: {{ classes[conquista.cavaleiro.classe].cor_primaria }};">
+                            {{ classes[conquista.cavaleiro.classe].icone }} {{ conquista.cavaleiro.nome }}
+                        </span>
                     </div>
                 </div>
             {% endfor %}
