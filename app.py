@@ -63,6 +63,9 @@ class Cavaleiro(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     quests = db.relationship('Quest', backref='cavaleiro', lazy=True)
     conquistas = db.relationship('Conquista', backref='cavaleiro', lazy=True)
+    nivel = db.Column(db.Integer, default=1)
+    xp = db.Column(db.Integer, default=0)
+    xp_proximo_nivel = db.Column(db.Integer, default=100) 
 
 class Quest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,8 +82,10 @@ class Quest(db.Model):
     desativada_ate = db.Column(db.DateTime)
     cavaleiro_id = db.Column(db.Integer, db.ForeignKey('cavaleiro.id'))
     concluida_por = db.Column(db.String(50))
-    reivindicada = db.Column(db.Boolean, default=False)  # Adicione esta linha
+    reivindicada = db.Column(db.Boolean, default=False)
     data_reivindicacao = db.Column(db.DateTime)
+    xp_recompensa = db.Column(db.Integer, default=50)
+    global_quest = db.Column(db.Boolean, default=False) 
 
 class Conquista(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -217,15 +222,21 @@ def requer_login():
 def tabuleiro():
     conquistas = Conquista.query.filter_by(global_conquista=True).order_by(Conquista.data.desc()).limit(5).all()
     cavaleiros = Cavaleiro.query.all()
-    quests_globais = Quest.query.filter_by(global_quest=True).all()
-    return render_template('tabuleiro.html',
-                        cavaleiros=cavaleiros,
-                        classes=CLASSES,
-                        conquistas=conquistas,
-                        categorias=CATEGORIAS,
-                        quests_globais=quests_globais,
-                        is_master=is_master(),
-                        usuario_logado=usuario_logado())
+    quests_globais = Quest.query.filter(
+        Quest.global_quest == True,
+        Quest.mestre_quest == True
+    ).all()
+    
+    return render_template(
+        'tabuleiro.html',
+        cavaleiros=cavaleiros,
+        classes=CLASSES,
+        conquistas=conquistas,
+        categorias=CATEGORIAS,
+        quests_globais=quests_globais,  # Corrigido aqui
+        is_master=is_master(),
+        usuario_logado=usuario_logado()
+    )
 
 @app.route('/cavaleiro/<int:cavaleiro_id>')
 def perfil_cavaleiro(cavaleiro_id):
@@ -284,6 +295,7 @@ def adicionar_quest():
             semanal='semanal' in request.form,
             global_quest='global_quest' in request.form and is_master(),
             mestre_quest='mestre_quest' in request.form and is_master(),
+            xp_recompensa=int(request.form.get('xp', 50)),  # Correção: vírgula adicionada
             categoria=request.form['categoria'],
             cavaleiro_id=request.form['cavaleiro_id']
         )
@@ -304,30 +316,48 @@ def toggle_quest(quest_id):
     
     quest = Quest.query.get_or_404(quest_id)
     user = usuario_logado()
-    
+    cavaleiro = user.cavaleiro
+
     try:
-        if quest.mestre_quest:
+        # Missões Globais do Mestre
+        if quest.mestre_quest and quest.global_quest:
             if not quest.reivindicada:
                 quest.reivindicada = True
                 quest.data_reivindicacao = datetime.utcnow()
-                quest.concluida_por = user.cavaleiro.nome
-                flash('Missão reivindicada!', 'success')
+                quest.concluida_por = cavaleiro.nome
+                cavaleiro.xp += quest.xp_recompensa
+                flash(f'Missão reivindicada! +{quest.xp_recompensa} XP', 'success')
             else:
                 flash('Esta missão já foi reivindicada', 'error')
+        
+        # Missões Normais
         else:
             if quest.desativada_ate and datetime.utcnow() < quest.desativada_ate:
-                flash('Esta missão está em cooldown', 'error')
+                flash('Missão em cooldown', 'error')
                 return redirect(request.referrer)
                 
             quest.concluida = not quest.concluida
             quest.ultima_conclusao = datetime.utcnow() if quest.concluida else None
             
+            if quest.concluida:
+                cavaleiro.xp += quest.xp_recompensa
+                flash(f'+{quest.xp_recompensa} XP ganho!', 'success')
+            
+            # Atualizar cooldown
             if quest.diaria and quest.concluida:
                 quest.desativada_ate = datetime.utcnow() + timedelta(hours=24)
             elif quest.semanal and quest.concluida:
                 quest.desativada_ate = datetime.utcnow() + timedelta(weeks=1)
         
+        # Verificar subida de nível
+        while cavaleiro.xp >= cavaleiro.xp_proximo_nivel:
+            cavaleiro.xp -= cavaleiro.xp_proximo_nivel
+            cavaleiro.nivel += 1
+            cavaleiro.xp_proximo_nivel = int(cavaleiro.xp_proximo_nivel * 1.5)
+            flash(f'⭐ Subiu para o nível {cavaleiro.nivel}!', 'success')
+        
         db.session.commit()
+    
     except Exception as e:
         flash(f'Erro: {str(e)}', 'error')
         db.session.rollback()
