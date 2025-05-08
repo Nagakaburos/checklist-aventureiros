@@ -222,7 +222,11 @@
                         {% endif %}
                     </h3>
                     
-                    {% if quest.mestre_quest and not quest.reivindicada %}
+                    {% else %}
+                    <div class="aviso-medieval">
+                        🔒 Os registros deste aventureiro são privados
+                    </div>
+                {% endif %}        {% if quest.mestre_quest and not quest.reivindicada %}
                         <a href="/toggle_quest/{{ quest.id }}" class="btn-medieval">
                             🛡️ Reivindicar Missão
                         </a>

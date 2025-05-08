@@ -233,20 +233,25 @@ def tabuleiro():
         classes=CLASSES,
         conquistas=conquistas,
         categorias=CATEGORIAS,
-        quests_globais=quests_globais,  # Corrigido aqui
+        quests_globais=quests_globais,
         is_master=is_master(),
         usuario_logado=usuario_logado()
     )
 
 @app.route('/cavaleiro/<int:cavaleiro_id>')
 def perfil_cavaleiro(cavaleiro_id):
-    cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)
-    quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id, global_quest=False).all()
-    conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).all()
-    return render_template('perfil_cavaleiro.html',
+                    if usuario_logado() and (usuario_logado().cavaleiro.id == cavaleiro.id or is_master()):
+                        quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id).all()
+                    else:
+                        quests = []
+                    
+                    return render_template(
+                        'perfil_cavaleiro.html',
+                        quests=quests,
                         cavaleiro=cavaleiro,
                         classes=CLASSES,
                         quests=quests,
+                        datetime=datetime,
                         conquistas=conquistas,
                         categorias=CATEGORIAS,
                         is_master=is_master(),
