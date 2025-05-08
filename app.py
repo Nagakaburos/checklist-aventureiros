@@ -240,22 +240,25 @@ def tabuleiro():
 
 @app.route('/cavaleiro/<int:cavaleiro_id>')
 def perfil_cavaleiro(cavaleiro_id):
-                    if usuario_logado() and (usuario_logado().cavaleiro.id == cavaleiro.id or is_master()):
-                        quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id).all()
-                    else:
-                        quests = []
-                    
-                    return render_template(
-                        'perfil_cavaleiro.html',
-                        quests=quests,
-                        cavaleiro=cavaleiro,
-                        classes=CLASSES,
-                        quests=quests,
-                        datetime=datetime,
-                        conquistas=conquistas,
-                        categorias=CATEGORIAS,
-                        is_master=is_master(),
-                        usuario_logado=usuario_logado())
+    cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)  # Adicione esta linha
+    conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).all()  # Adicione esta linha
+    
+    if usuario_logado() and (usuario_logado().cavaleiro.id == cavaleiro.id or is_master()):
+        quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id).all()
+    else:
+        quests = []
+    
+    return render_template(
+        'perfil_cavaleiro.html',
+        cavaleiro=cavaleiro,
+        classes=CLASSES,
+        quests=quests,
+        conquistas=conquistas,  # Adicione esta linha
+        categorias=CATEGORIAS,
+        is_master=is_master(),
+        usuario_logado=usuario_logado(),
+        datetime=datetime.utcnow  # Adicione isto
+    )
 
 @app.route('/adicionar_cavaleiro', methods=['POST'])
 def adicionar_cavaleiro():
@@ -293,17 +296,21 @@ def adicionar_quest():
         return redirect(url_for('login'))
     
     try:
+        # Forçar mestre_quest e global_quest para False se não for mestre
+        is_master_user = is_master()
+        
         nova_quest = Quest(
             titulo=request.form['titulo'],
-            descricao=request.form['descricao'],
+            descricao=request.form.get('descricao', ''),
             diaria='diaria' in request.form,
             semanal='semanal' in request.form,
-            global_quest='global_quest' in request.form and is_master(),
-            mestre_quest='mestre_quest' in request.form and is_master(),
-            xp_recompensa=int(request.form.get('xp', 50)),  # Correção: vírgula adicionada
+            global_quest=is_master_user and 'global_quest' in request.form,
+            mestre_quest=is_master_user and 'mestre_quest' in request.form,
+            xp_recompensa=int(request.form.get('xp', 50)),
             categoria=request.form['categoria'],
             cavaleiro_id=request.form['cavaleiro_id']
         )
+        
         db.session.add(nova_quest)
         db.session.commit()
         flash('Missão adicionada!', 'success')
