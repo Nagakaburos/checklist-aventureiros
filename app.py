@@ -11,7 +11,6 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Configuração do Banco de Dados
 uri = os.getenv('DATABASE_URL')
 if uri and uri.startswith('postgres://'):
     uri = uri.replace('postgres://', 'postgresql://', 1)
