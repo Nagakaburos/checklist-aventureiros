@@ -243,26 +243,30 @@ def tabuleiro():
 
 @app.route('/cavaleiro/<int:cavaleiro_id>')
 def perfil_cavaleiro(cavaleiro_id):
-    cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)  # Adicione esta linha
-    conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).all()  # Adicione esta linha
+    cavaleiro = Cavaleiro.query.get_or_404(cavaleiro_id)
+    conquistas = Conquista.query.filter_by(cavaleiro_id=cavaleiro_id).all()
     
-    if usuario_logado() and (usuario_logado().cavaleiro.id == cavaleiro.id or is_master()):
-        quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id).all()
-    else:
-        quests = []
+    pode_ver = False
+    if usuario_logado():
+        pode_ver = is_master() or (
+            hasattr(usuario_logado(), 'cavaleiro') and 
+            usuario_logado().cavaleiro and 
+            usuario_logado().cavaleiro.id == cavaleiro.id
+        )
+    
+    quests = Quest.query.filter_by(cavaleiro_id=cavaleiro_id).all() if pode_ver else []
     
     return render_template(
         'perfil_cavaleiro.html',
         cavaleiro=cavaleiro,
         classes=CLASSES,
         quests=quests,
-        conquistas=conquistas,  # Adicione esta linha
+        conquistas=conquistas,
         categorias=CATEGORIAS,
         is_master=is_master(),
         usuario_logado=usuario_logado(),
-        datetime=datetime.utcnow  # Adicione isto
+        datetime=datetime.utcnow
     )
-
 @app.route('/adicionar_cavaleiro', methods=['POST'])
 def adicionar_cavaleiro():
     if not usuario_logado():
