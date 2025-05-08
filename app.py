@@ -155,7 +155,10 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler.start()
 
 def usuario_logado():
-    return Usuario.query.get(session.get('user_id'))
+    user_id = session.get('user_id')
+    if user_id:
+        return Usuario.query.get(user_id)
+    return None
 
 def is_master():
     user = usuario_logado()
