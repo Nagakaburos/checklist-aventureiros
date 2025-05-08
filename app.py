@@ -117,6 +117,7 @@ def criar_tabelas():
             )
             db.session.add(cavaleiro_mestre)
             db.session.commit()
+            
 
 criar_tabelas()
 
@@ -124,35 +125,24 @@ def resetar_quests():
     with app.app_context():
         agora = datetime.utcnow()
         
+        # Reset para missões com cooldown expirado (12 horas)
         Quest.query.filter(
-            Quest.diaria == True,
             Quest.desativada_ate <= agora
         ).update({
             'concluida': False,
             'desativada_ate': None,
             'concluida_por': None,
-            'reivindicada': False,  # Novo
-            'data_reivindicacao': None  # Novo
+            'reivindicada': False
         })
-        
-        if agora.weekday() == 6:
-            Quest.query.filter(
-                Quest.semanal == True,
-                Quest.desativada_ate <= agora
-            ).update({
-                'concluida': False,
-                'desativada_ate': None,
-                'concluida_por': None,
-                'reivindicada': False,  # Novo
-                'data_reivindicacao': None  # Novo
-            })
         
         db.session.commit()
 
+# Configuração do agendador
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = BackgroundScheduler()
-    scheduler.add_job(resetar_quests, 'interval', hours=1)
+    scheduler.add_job(resetar_quests, 'interval', hours=12)
     scheduler.start()
+    
 
 def usuario_logado():
     user_id = session.get('user_id')
@@ -274,17 +264,23 @@ def adicionar_cavaleiro():
         return redirect(url_for('login'))
     
     try:
+        # Verificar se a classe é válida
+        classe = request.form['classe']
+        if classe not in CLASSES:
+            raise ValueError('Classe inválida')
+
         imagem = None
         if 'imagem' in request.files:
             file = request.files['imagem']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
                 imagem = filename
 
         novo_cavaleiro = Cavaleiro(
             nome=request.form['nome'],
-            classe=request.form['classe'],
+            classe=classe,  # Usar classe validada
             imagem=imagem,
             usuario_id=usuario_logado().id
         )
