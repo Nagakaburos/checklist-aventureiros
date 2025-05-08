@@ -1,54 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- Estilos atualizados -->
+    <title>🏆 Conquistas</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
-        .conquista-global {
-            border-left: 5px solid #FFD700;
-            background: rgba(255, 215, 0, 0.1);
-            position: relative;
-            overflow: hidden;
+        :root {
+            --pergaminho: rgba(240, 234, 214, 0.9);
+            --tinta: #3D2B1F;
+            --sangue-dragao: #8B0000;
         }
-
-        .conquista-global::after {
-            content: '★';
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            font-size: 2em;
-            color: #FFD700;
-            opacity: 0.3;
+        
+        .grid-conquistas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 2rem 0;
         }
-
-        .badge-nivel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 5px 10px;
+        
+        .conquista-card {
+            background: var(--pergaminho);
+            border: 3px solid var(--tinta);
             border-radius: 15px;
-            font-size: 0.9em;
+            padding: 1.5rem;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .conquista-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .global-conquista {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .badge-global {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FFD700;
+            color: #3D2B1F;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏆 Conquistas Globais</h1>
+        <a href="{{ url_for('tabuleiro') }}" class="btn-medieval">← Voltar para a Taverna</a>
+        <h1>🏆 Hall da Glória</h1>
         
         <div class="grid-conquistas">
-            {% for conquista in conquistas if conquista.global_conquista %}
-                <div class="conquista-global">
-                    <div class="cabecalho-conquista">
-                        <h3>{{ conquista.titulo }}</h3>
-                        <span class="autor">por {{ conquista.autor_nome }}</span>
-                    </div>
+            {% for conquista in conquistas %}
+                <div class="conquista-card {{ 'global-conquista' if conquista.global_conquista }}">
+                    {% if conquista.global_conquista %}
+                        <div class="badge-global">🌟 Global</div>
+                    {% endif %}
+                    <h3>{{ conquista.titulo }}</h3>
                     <p>{{ conquista.descricao }}</p>
                     <div class="info-conquista">
-                        <span class="data">{{ conquista.data.strftime('%d/%m/%Y') }}</span>
-                        <span class="classe" style="color: {{ classes[conquista.cavaleiro.classe].cor_primaria }};">
-                            {{ classes[conquista.cavaleiro.classe].icone }} {{ conquista.cavaleiro.nome }}
-                        </span>
+                        <small>Conquistado por: {{ conquista.autor_nome }}</small><br>
+                        <small>{{ conquista.data.strftime('%d/%m/%Y') }}</small>
                     </div>
                 </div>
             {% endfor %}

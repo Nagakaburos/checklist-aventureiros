@@ -80,6 +80,8 @@ class Quest(db.Model):
     desativada_ate = db.Column(db.DateTime)
     cavaleiro_id = db.Column(db.Integer, db.ForeignKey('cavaleiro.id'))
     concluida_por = db.Column(db.String(50))
+    reivindicada = db.Column(db.Boolean, default=False)  # Adicione esta linha
+    data_reivindicacao = db.Column(db.DateTime)
 
 class Conquista(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -117,16 +119,29 @@ criar_tabelas()
 def resetar_quests():
     with app.app_context():
         agora = datetime.utcnow()
+        
         Quest.query.filter(
             Quest.diaria == True,
             Quest.desativada_ate <= agora
-        ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
+        ).update({
+            'concluida': False,
+            'desativada_ate': None,
+            'concluida_por': None,
+            'reivindicada': False,  # Novo
+            'data_reivindicacao': None  # Novo
+        })
         
         if agora.weekday() == 6:
             Quest.query.filter(
                 Quest.semanal == True,
                 Quest.desativada_ate <= agora
-            ).update({'concluida': False, 'desativada_ate': None, 'concluida_por': None})
+            ).update({
+                'concluida': False,
+                'desativada_ate': None,
+                'concluida_por': None,
+                'reivindicada': False,  # Novo
+                'data_reivindicacao': None  # Novo
+            })
         
         db.session.commit()
 
@@ -291,23 +306,27 @@ def toggle_quest(quest_id):
     quest = Quest.query.get_or_404(quest_id)
     user = usuario_logado()
     
-    if not (quest.global_quest or (user.cavaleiro and quest.cavaleiro_id == user.cavaleiro.id) or is_master()):
-        flash('Permissão negada', 'error')
-        return redirect(url_for('tabuleiro'))
-    
-    if quest.mestre_quest and quest.concluida:
-        flash('Missões do Mestre não podem ser desfeitas', 'error')
-        return redirect(request.referrer)
-    
     try:
-        quest.concluida = not quest.concluida
-        quest.ultima_conclusao = datetime.utcnow() if quest.concluida else None
-        quest.concluida_por = user.cavaleiro.nome if quest.concluida else None
-        
-        if quest.mestre_quest and quest.concluida:
-            cavaleiro = Cavaleiro.query.get(quest.cavaleiro_id)
-            cavaleiro.nivel += 1
-            flash(f'Nível aumentado para {cavaleiro.nivel}!', 'success')
+        if quest.mestre_quest:
+            if not quest.reivindicada:
+                quest.reivindicada = True
+                quest.data_reivindicacao = datetime.utcnow()
+                quest.concluida_por = user.cavaleiro.nome
+                flash('Missão reivindicada!', 'success')
+            else:
+                flash('Esta missão já foi reivindicada', 'error')
+        else:
+            if quest.desativada_ate and datetime.utcnow() < quest.desativada_ate:
+                flash('Esta missão está em cooldown', 'error')
+                return redirect(request.referrer)
+                
+            quest.concluida = not quest.concluida
+            quest.ultima_conclusao = datetime.utcnow() if quest.concluida else None
+            
+            if quest.diaria and quest.concluida:
+                quest.desativada_ate = datetime.utcnow() + timedelta(hours=24)
+            elif quest.semanal and quest.concluida:
+                quest.desativada_ate = datetime.utcnow() + timedelta(weeks=1)
         
         db.session.commit()
     except Exception as e:

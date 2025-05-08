@@ -197,19 +197,42 @@
 
         {% for categoria in categorias %}
             <h3>{{ categoria.1 }}</h3>
-            {% for quest in quests|selectattr('categoria', 'equalto', categoria.0) %}
-                <div class="quest-card {{ 'mestre-quest' if quest.mestre_quest }} {{ 'concluida' if quest.concluida }}">
-                    {% if quest.mestre_quest %}<div class="badge-mestre">Missão do Mestre</div>{% endif %}
+                    {% for quest in quests|selectattr('categoria', 'equalto', categoria.0) %}
+                <div class="quest-card 
+                    {{ 'mestre-quest' if quest.mestre_quest }}
+                    {{ 'cooldown' if quest.desativada_ate and datetime.utcnow() < quest.desativada_ate }}
+                    {{ 'reivindicavel' if quest.mestre_quest and not quest.reivindicada }}
+                    {{ 'reivindicada' if quest.mestre_quest and quest.reivindicada }}">
+                    
+                    {% if quest.mestre_quest %}
+                        <div class="badge-mestre">
+                            {% if quest.reivindicada %}
+                                🛡️ Reivindicada por {{ quest.concluida_por }}
+                            {% else %}
+                                🎯 Missão do Mestre
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
                     <h3>
                         {% if quest.concluida %}✅{% else %}⚔️{% endif %}
                         {{ quest.titulo }}
+                        {% if quest.desativada_ate %}
+                            <small>(Ativa em {{ quest.desativada_ate.strftime('%d/%m %H:%M') }})</small>
+                        {% endif %}
                     </h3>
-                    <p>{{ quest.descricao }}</p>
-                    {% if quest.concluida_por %}
-                        <small>Concluída por: {{ quest.concluida_por }}</small>
+                    
+                    {% if quest.mestre_quest and not quest.reivindicada %}
+                        <a href="/toggle_quest/{{ quest.id }}" class="btn-medieval">
+                            🛡️ Reivindicar Missão
+                        </a>
+                    {% elif not quest.mestre_quest %}
+                        <a href="/toggle_quest/{{ quest.id }}" class="btn-medieval">
+                            {% if quest.concluida %}↩ Desfazer{% else %}✅ Concluir{% endif %}
+                        </a>
                     {% endif %}
                 </div>
-            {% endfor %}
+        {% endfor %}
         {% endfor %}
 
         <h2>🏆 Conquistas</h2>
