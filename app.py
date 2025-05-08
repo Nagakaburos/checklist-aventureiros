@@ -85,7 +85,6 @@ class Quest(db.Model):
     reivindicada = db.Column(db.Boolean, default=False)
     data_reivindicacao = db.Column(db.DateTime)
     xp_recompensa = db.Column(db.Integer, default=50)
-    global_quest = db.Column(db.Boolean, default=False) 
 
 class Conquista(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -142,7 +141,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = BackgroundScheduler()
     scheduler.add_job(resetar_quests, 'interval', hours=12)
     scheduler.start()
-    
+
 
 def usuario_logado():
     user_id = session.get('user_id')
@@ -218,15 +217,15 @@ def tabuleiro():
     quests_globais = Quest.query.filter(
         Quest.global_quest == True,
         Quest.mestre_quest == True
-    ).all()
+    ).order_by(Quest.data_criacao.desc()).all()
     
     return render_template(
         'tabuleiro.html',
+        quests_globais=quests_globais,
         cavaleiros=cavaleiros,
         classes=CLASSES,
         conquistas=conquistas,
         categorias=CATEGORIAS,
-        quests_globais=quests_globais,
         is_master=is_master(),
         usuario_logado=usuario_logado()
     )
@@ -264,19 +263,16 @@ def adicionar_cavaleiro():
         return redirect(url_for('login'))
     
     try:
-        # Verificar se a classe é válida
-        classe = request.form['classe']
-        if classe not in CLASSES:
-            raise ValueError('Classe inválida')
-
         imagem = None
         if 'imagem' in request.files:
             file = request.files['imagem']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
-                imagem = filename
+            if file and file.filename != '':  # Verifica se o arquivo não está vazio
+                if allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    imagem = filename
+                else:
+                    flash('Tipo de arquivo não permitido', 'error')
 
         novo_cavaleiro = Cavaleiro(
             nome=request.form['nome'],

@@ -93,39 +93,32 @@
         </div>
 
         <!-- Seção de Quests Globais -->
-        <div class="quests-globais">
-            <h2>🗺️ Missões Globais</h2>
-            {% for quest in quests_globais %}
-                <div class="quest-global">
-                    <h3>{{ quest.titulo }}</h3>
-                    <p>{{ quest.descricao }}</p>
-                    {% if usuario_logado %}
-                        <a href="/toggle_quest/{{ quest.id }}" class="btn-medieval">
-                            {% if quest.concluida %}Desfazer{% else %}Concluir{% endif %}
-                        </a>
-                    {% endif %}
-                </div>
-            {% endfor %}
+        <div class="missoes-globais" style="margin: 30px 0;">
+            <h2>Missões Globais da Guilda</h2>
+            <div class="grid-quests" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                {% for quest in quests_globais %}
+                    <div class="quest-card" style="border: 2px solid #800080; padding: 15px; border-radius: 10px;">
+                        <h3>👑 {{ quest.titulo }}</h3>
+                        <p>{{ quest.descricao }}</p>
+                        <small>Categoria: {{ quest.categoria }}</small>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
 
         <!-- Grid de Cavaleiros -->
-        <div class="grid-cavaleiros">
+        <div class="grid-cavaleiros" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
             {% for cavaleiro in cavaleiros %}
-                <div class="cavaleiro-card" 
-                     style="border-color: {{ classes[cavaleiro.classe].cor_primaria }}">
-                    <h2>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h2>
+                <div class="cavaleiro-card" style="border: 2px solid {{ classes[cavaleiro.classe].cor_primaria }}; padding: 15px; border-radius: 10px;">
+                    <h3>{{ classes[cavaleiro.classe].icone }} {{ cavaleiro.nome }}</h3>
+                    {% if cavaleiro.imagem %}
+                        <img src="{{ url_for('static', filename='uploads/' + cavaleiro.imagem) }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                    {% endif %}
                     <p>Classe: {{ cavaleiro.classe }}</p>
-                    <a href="{{ url_for('perfil_cavaleiro', cavaleiro_id=cavaleiro.id) }}" 
-                       class="btn-medieval">
-                        Ver Missões
-                    </a>
-                </div>
-                </div>
-            {% else %}
-                <div class="aviso">
-                    🛡️ Apenas as missões da Guilda estão disponíveis para aventureiros
+                    <p>Nível: {{ cavaleiro.nivel }}</p>
                 </div>
             {% endfor %}
+        </div>
 
         <!-- Link para Conquistas -->
         <div class="conquistas-link">
