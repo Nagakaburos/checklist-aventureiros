@@ -193,7 +193,6 @@ def registrar():
             db.session.add(novo_usuario)
             db.session.commit()
             
-            # Cria cavaleiro automaticamente para o novo usuário
             novo_cavaleiro = Cavaleiro(
                 nome=request.form['username'],
                 classe='Guerreiro',
@@ -303,7 +302,6 @@ def adicionar_quest():
         return redirect(url_for('login'))
     
     try:
-        # Forçar mestre_quest e global_quest para False se não for mestre
         is_master_user = is_master()
         
         nova_quest = Quest(
@@ -338,7 +336,6 @@ def toggle_quest(quest_id):
     cavaleiro = user.cavaleiro
 
     try:
-        # Missões Globais do Mestre
         if quest.mestre_quest and quest.global_quest:
             if not quest.reivindicada:
                 quest.reivindicada = True
@@ -349,7 +346,6 @@ def toggle_quest(quest_id):
             else:
                 flash('Esta missão já foi reivindicada', 'error')
         
-        # Missões Normais
         else:
             if quest.desativada_ate and datetime.utcnow() < quest.desativada_ate:
                 flash('Missão em cooldown', 'error')
@@ -362,13 +358,11 @@ def toggle_quest(quest_id):
                 cavaleiro.xp += quest.xp_recompensa
                 flash(f'+{quest.xp_recompensa} XP ganho!', 'success')
             
-            # Atualizar cooldown
             if quest.diaria and quest.concluida:
                 quest.desativada_ate = datetime.utcnow() + timedelta(hours=24)
             elif quest.semanal and quest.concluida:
                 quest.desativada_ate = datetime.utcnow() + timedelta(weeks=1)
         
-        # Verificar subida de nível
         while cavaleiro.xp >= cavaleiro.xp_proximo_nivel:
             cavaleiro.xp -= cavaleiro.xp_proximo_nivel
             cavaleiro.nivel += 1
